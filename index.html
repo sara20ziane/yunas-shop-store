@@ -2,34 +2,39 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yuna’s Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
-...
-    @media (max-width: 640px) {
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
     <style>
-        body { background-color: #FAF6F3; color: #4A4A4A; font-family: sans-serif; }
-        .bg-nude { background-color: #E8D5C4; }
-        .text-rose-poudré { color: #D8A7B1; }
+        /* Palette Yuna's Shop */
+        :root {
+            --beige-nude: #EFE6DD;
+            --rose-poudre: #E8C1C1;
+            --blanc-casse: #FDFBF8;
+            --taupe-clair: #A6968B;
+            --noir-doux: #2D2926;
+        }
+        body { background-color: var(--blanc-casse); color: var(--noir-doux); font-family: 'Segoe UI', sans-serif; }
+        .bg-custom-nude { background-color: var(--beige-nude); }
+        .text-custom-rose { color: var(--rose-poudre); }
+        .text-custom-taupe { color: var(--taupe-clair); }
     </style>
 </head>
-<body class="min-h-screen">
-    <header class="p-6 text-center">
-        <h1 class="text-2xl font-light tracking-widest uppercase text-rose-poudré">Yuna’s Shop</h1>
-        <p class="text-sm text-gray-500">Sélection raffinée</p>
+<body>
+    <header class="p-8 text-center border-b border-stone-200">
+        <h1 class="text-3xl font-light tracking-widest uppercase text-custom-rose">Yuna’s Shop</h1>
+        <p class="text-sm text-custom-taupe mt-2">Élégance & Sélection</p>
     </header>
 
-    <main class="grid grid-cols-2 gap-4 p-4">
-        <!-- Exemple de produit -->
-        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-            <div class="h-40 bg-stone-100 flex items-center justify-center text-stone-400">Photo</div>
+    <main class="p-4 grid grid-cols-2 gap-4">
+        <!-- Exemple produit -->
+        <div class="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+            <div class="h-48 bg-custom-nude flex items-center justify-center text-custom-taupe">Photo</div>
             <div class="p-3">
-                <h2 class="text-xs font-bold text-stone-700">Robe Printanière</h2>
-                <p class="text-sm font-semibold text-rose-poudré mt-1">4500 DA</p>
+                <h2 class="text-[12px] font-medium text-stone-800">Article Exemple</h2>
+                <p class="text-sm font-bold text-custom-taupe mt-1">0000 DA</p>
             </div>
         </div>
-        <!-- Fin exemple -->
     </main>
 </body>
 </html>
