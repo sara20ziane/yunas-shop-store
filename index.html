@@ -6,35 +6,38 @@
     <title>Yuna’s Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Palette Yuna's Shop */
-        :root {
-            --beige-nude: #EFE6DD;
-            --rose-poudre: #E8C1C1;
-            --blanc-casse: #FDFBF8;
-            --taupe-clair: #A6968B;
-            --noir-doux: #2D2926;
-        }
-        body { background-color: var(--blanc-casse); color: var(--noir-doux); font-family: 'Segoe UI', sans-serif; }
+        :root { --beige-nude: #EFE6DD; --rose-poudre: #E8C1C1; --blanc-casse: #FDFBF8; --taupe-clair: #A6968B; --noir-doux: #2D2926; }
+        body { background-color: var(--blanc-casse); color: var(--noir-doux); font-family: sans-serif; }
         .bg-custom-nude { background-color: var(--beige-nude); }
         .text-custom-rose { color: var(--rose-poudre); }
-        .text-custom-taupe { color: var(--taupe-clair); }
     </style>
 </head>
 <body>
     <header class="p-8 text-center border-b border-stone-200">
         <h1 class="text-3xl font-light tracking-widest uppercase text-custom-rose">Yuna’s Shop</h1>
-        <p class="text-sm text-custom-taupe mt-2">Élégance & Sélection</p>
     </header>
 
-    <main class="p-4 grid grid-cols-2 gap-4">
-        <!-- Exemple produit -->
-        <div class="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
-            <div class="h-48 bg-custom-nude flex items-center justify-center text-custom-taupe">Photo</div>
-            <div class="p-3">
-                <h2 class="text-[12px] font-medium text-stone-800">Article Exemple</h2>
-                <p class="text-sm font-bold text-custom-taupe mt-1">0000 DA</p>
-            </div>
-        </div>
+    <main id="catalogue" class="p-4 grid grid-cols-2 gap-4">
+        <!-- Les produits s'afficheront ici automatiquement -->
     </main>
+
+    <script>
+        async function chargerProduits() {
+            const reponse = await fetch('produits.json');
+            const produits = await reponse.json();
+            const catalogue = document.getElementById('catalogue');
+            
+            catalogue.innerHTML = produits.map(p => `
+                <div class="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+                    <img src="${p.image}" class="h-48 w-full object-cover bg-custom-nude">
+                    <div class="p-3">
+                        <h2 class="text-[12px] font-medium text-stone-800 truncate">${p.nom}</h2>
+                        <p class="text-sm font-bold text-custom-rose mt-1">${p.prix} DA</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        chargerProduits();
+    </script>
 </body>
 </html>
