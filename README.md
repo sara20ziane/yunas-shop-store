@@ -9,7 +9,11 @@ Formulaire bilingue français/arabe permettant aux clientes d’envoyer leurs li
 - référence unique générée pour chaque demande ;
 - demandes stockées dans Firestore ;
 - espace `/admin` protégé par Firebase Authentication ;
-- bouton de réponse WhatsApp et suivi « nouvelle / traitée ».
+- suivi détaillé : nouvelle, vérification, prix envoyé, confirmée, refusée ou archivée ;
+- recherche et filtres par statut et date ;
+- devis avec total, acompte, délai et message WhatsApp prérempli ;
+- notes privées, copie groupée des liens et compteurs ;
+- notifications navigateur lorsque l’espace administratrice est ouvert.
 
 ## Installation
 

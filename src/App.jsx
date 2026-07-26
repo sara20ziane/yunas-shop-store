@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import Admin from "./Admin";
 import { db, firebaseReady } from "./firebase";
+
+const Admin = lazy(() => import("./Admin"));
 
 const copy = {
   fr: {
@@ -29,7 +30,7 @@ const copy = {
     privacy: "Votre numéro est utilisé uniquement pour répondre à cette demande.",
     invalidLinks: "Ajoutez au moins un lien commençant par http:// ou https://.",
     tooManyLinks: "Vous pouvez envoyer jusqu’à 30 liens par demande.",
-    invalidWhatsapp: "Saisissez un numéro WhatsApp valide.",
+    invalidWhatsapp: "Saisissez un numéro algérien commençant par 05, 06 ou 07.",
     error: "La demande n’a pas pu être envoyée. Réessayez dans un instant.",
     configError: "Le formulaire est momentanément indisponible.",
     successTitle: "Demande bien reçue",
@@ -63,7 +64,7 @@ const copy = {
     privacy: "يُستخدم رقمك فقط للرد على هذا الطلب.",
     invalidLinks: "أضيفي رابطاً واحداً على الأقل يبدأ بـ http:// أو https://.",
     tooManyLinks: "يمكنك إرسال 30 رابطاً كحد أقصى في الطلب الواحد.",
-    invalidWhatsapp: "أدخلي رقم واتساب صحيحاً.",
+    invalidWhatsapp: "أدخلي رقماً جزائرياً يبدأ بـ 05 أو 06 أو 07.",
     error: "تعذر إرسال الطلب. حاولي مرة أخرى بعد قليل.",
     configError: "الخدمة غير متاحة مؤقتاً.",
     successTitle: "تم استلام طلبك",
@@ -138,7 +139,7 @@ function RequestForm() {
     }
 
     const normalizedWhatsapp = normalizeWhatsapp(whatsapp);
-    if (normalizedWhatsapp.length < 11 || normalizedWhatsapp.length > 15) {
+    if (!/^213[567]\d{8}$/.test(normalizedWhatsapp)) {
       setFieldError(t.invalidWhatsapp);
       return;
     }
@@ -189,9 +190,9 @@ function RequestForm() {
   return (
     <main className={`site-shell ${isArabic ? "is-arabic" : ""}`} dir={isArabic ? "rtl" : "ltr"}>
       <header className="site-header">
-        <a className="brand" href="/" aria-label="Yuna's Shop">
-          Yuna’s Shop
-          <span className="brand-leaf" aria-hidden="true">❧</span>
+        <a className="brand brand-with-logo" href="/" aria-label="Yuna's Shop">
+          <img src="/logo-yunas-shop.jpg" alt="" />
+          <span>Yuna’s Shop</span>
         </a>
         <div className="header-actions">
           <span className="whatsapp-note">
@@ -302,6 +303,13 @@ function RequestForm() {
         </div>
       </section>
 
+      <footer className="site-footer">
+        <a href="https://www.instagram.com/yunas.shop/" target="_blank" rel="noreferrer">
+          Instagram · @yunas.shop
+        </a>
+        <span>Yuna’s Shop — votre intermédiaire d’achat en Algérie</span>
+      </footer>
+
       <div className="botanical botanical-left" aria-hidden="true"><span /><i /><b /></div>
       <div className="botanical botanical-right" aria-hidden="true"><span /></div>
     </main>
@@ -309,5 +317,9 @@ function RequestForm() {
 }
 
 export default function App() {
-  return window.location.pathname.startsWith("/admin") ? <Admin /> : <RequestForm />;
+  return window.location.pathname.startsWith("/admin") ? (
+    <Suspense fallback={<main className="admin-shell"><p>Chargement…</p></main>}>
+      <Admin />
+    </Suspense>
+  ) : <RequestForm />;
 }
