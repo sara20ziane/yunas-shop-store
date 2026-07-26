@@ -75,6 +75,10 @@ function calculateSimulatedPrice(quoteItem) {
   return { coefficient, purchaseDa, logisticsDa, finalPrice, estimatedProfit };
 }
 
+function roundToNearestHundred(value) {
+  return Math.round((Number(value) || 0) / 100) * 100;
+}
+
 function getIdentifiers(quoteItem) {
   return [
     quoteItem.productId ? `ID: ${quoteItem.productId}` : "",
@@ -453,7 +457,7 @@ function RequestCard({ item, onError }) {
 
   function useSimulatedPrice(index) {
     const simulation = calculateSimulatedPrice(quoteItems[index]);
-    changeQuoteItem(index, "priceDa", String(Math.round(simulation.finalPrice)));
+    changeQuoteItem(index, "priceDa", String(roundToNearestHundred(simulation.finalPrice)));
   }
 
   async function addCapture(index, file) {
