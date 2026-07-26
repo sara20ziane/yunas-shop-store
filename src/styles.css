@@ -1008,12 +1008,389 @@ textarea:focus,
   color: var(--muted);
 }
 
-.quote-fields {
+.quote-workflow {
+  margin: 8px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.quote-items {
+  display: grid;
+  gap: 14px;
+}
+
+.quote-item {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  gap: 18px;
+  border: 1px solid #eaded5;
+  border-radius: 18px;
+  padding: 16px;
+  background: #fffdfa;
+}
+
+.quote-capture {
+  position: relative;
+  display: grid;
+  min-height: 250px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px dashed #d6c2b6;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(207, 168, 174, 0.08), rgba(247, 241, 232, 0.8));
+  color: #a3938b;
+  text-align: center;
+}
+
+.quote-capture.has-capture {
+  border-style: solid;
+  background: #f4eee8;
+}
+
+.quote-capture img {
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  object-fit: contain;
+}
+
+.quote-capture > strong {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 5px 18px rgba(58, 42, 45, 0.14);
+  color: #111;
+  font-size: clamp(20px, 2vw, 30px);
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.quote-capture > small {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--cacao);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quote-item-fields {
+  min-width: 0;
+}
+
+.quote-item-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quote-item-heading > strong {
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+}
+
+.quote-item-heading a {
+  color: var(--plum);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.quote-item-fields > p {
+  overflow: hidden;
+  margin: 8px 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identifier-fields,
+.simulator-main-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.simulator-main-fields {
+  grid-template-columns: minmax(0, 1fr) 120px;
+}
+
+.identifier-fields label,
+.simulator-body label,
+.final-price-field,
+.quote-summary label {
+  display: grid;
+  gap: 6px;
+}
+
+.identifier-fields span,
+.simulator-body label > span,
+.final-price-field > span,
+.quote-summary span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.identifier-fields input,
+.simulator-body input,
+.final-price-field input,
+.quote-summary input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 11px;
+  outline: none;
+  background: #fff;
+  color: var(--cacao);
+}
+
+.identifier-fields input:focus,
+.simulator-body input:focus,
+.final-price-field input:focus,
+.quote-summary input:focus {
+  border-color: var(--plum);
+  box-shadow: 0 0 0 3px rgba(104, 40, 63, 0.08);
+}
+
+.price-simulator {
+  margin: 14px 0;
+  overflow: hidden;
+  border: 1px solid #e3d2c6;
+  border-radius: 14px;
+  background: #faf6f0;
+}
+
+.price-simulator summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--plum);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  list-style: none;
+}
+
+.price-simulator summary::-webkit-details-marker {
+  display: none;
+}
+
+.price-simulator summary::before {
+  content: "＋";
+}
+
+.price-simulator[open] summary::before {
+  content: "−";
+}
+
+.price-simulator summary > span {
+  margin-right: auto;
+}
+
+.price-simulator summary > strong {
+  color: var(--plum-deep);
+  font-size: 13px;
+}
+
+.simulator-body {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid #eaded5;
+  padding: 14px;
+  background: #fff;
+}
+
+.simulator-info,
+.logistics-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.simulator-info {
+  border-radius: 9px;
+  padding: 9px 11px;
+  background: #faf6f0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.logistics-mode > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.logistics-mode > div {
+  display: flex;
+  gap: 3px;
+  border-radius: 9px;
+  padding: 3px;
+  background: #f3ece6;
+}
+
+.logistics-mode button {
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.logistics-mode button.active {
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(58, 42, 45, 0.1);
+  color: var(--plum);
+}
+
+.simulator-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+  border-radius: 13px;
+  padding: 14px;
+  background: var(--plum);
+  color: #fff;
+}
+
+.simulator-result > div {
+  display: grid;
+  gap: 3px;
+}
+
+.simulator-result span,
+.simulator-result small {
+  font-size: 10px;
+  opacity: 0.82;
+}
+
+.simulator-result strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+}
+
+.simulator-result small {
+  grid-column: 1;
+}
+
+.simulator-result button {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #fff;
+  color: var(--plum);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.simulator-result button:disabled {
+  opacity: 0.45;
+}
+
+.final-price-field {
+  max-width: 230px;
+}
+
+.final-price-field input {
+  color: var(--plum);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.quote-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quote-item-actions button,
+.capture-button {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.capture-button {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--rose);
+  background: #f9edeb;
+  color: var(--plum);
+  cursor: pointer;
+}
+
+.capture-button input {
+  display: none;
+}
+
+.visual-button {
+  border: 1px solid var(--plum);
+  background: var(--plum);
+  color: #fff;
+}
+
+.visual-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.remove-capture-button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+}
+
+.quote-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  border-top: 1px solid #eee4dc;
-  padding-top: 20px;
+  margin-top: 18px;
+  border: 1px solid #dfcfc5;
+  border-radius: 16px;
+  padding: 15px;
+  background: #f8f1eb;
+}
+
+.quote-summary > div {
+  display: grid;
+  gap: 5px;
+}
+
+.quote-summary strong {
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
 }
 
 .private-note {
@@ -1047,6 +1424,14 @@ textarea:focus,
 
   .admin-stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .quote-item {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .identifier-fields {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1164,6 +1549,42 @@ textarea:focus,
 
   .quote-fields {
     grid-template-columns: 1fr;
+  }
+
+  .quote-item {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .quote-capture,
+  .quote-capture img {
+    min-height: 300px;
+  }
+
+  .identifier-fields,
+  .simulator-main-fields,
+  .quote-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .final-price-field {
+    max-width: none;
+  }
+
+  .simulator-result {
+    grid-template-columns: 1fr;
+  }
+
+  .simulator-result small,
+  .simulator-result button {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .simulator-info,
+  .logistics-mode {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .request-topline {
