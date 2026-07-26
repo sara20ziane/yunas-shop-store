@@ -24,7 +24,7 @@ Renseigner les variables Firebase dans `.env.local`.
 ## Déploiement Vercel
 
 1. Importer ce dépôt dans Vercel.
-2. Ajouter les variables de `.env.example` dans **Settings → Environment Variables**.
+2. Facultatif : ajouter les variables de `.env.example` dans **Settings → Environment Variables** pour remplacer la configuration Firebase Web intégrée.
 3. Déployer.
 4. Ajouter le domaine Vercel dans **Firebase Authentication → Settings → Authorized domains**.
 
