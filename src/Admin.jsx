@@ -54,6 +54,203 @@ function formatAmount(value) {
   return new Intl.NumberFormat("fr-DZ").format(amount);
 }
 
+function getPriceCoefficient(priceEur) {
+  const price = Number(priceEur) || 0;
+  if (price >= 30) return 1.2;
+  if (price >= 15) return 1.25;
+  return 1.3;
+}
+
+function calculateSimulatedPrice(quoteItem) {
+  const priceEur = Number(quoteItem.priceEur) || 0;
+  const rate = Number(quoteItem.rate) || 0;
+  const coefficient = getPriceCoefficient(priceEur);
+  const purchaseDa = priceEur * rate;
+  const logisticsDa =
+    quoteItem.logMode === "weight"
+      ? ((Number(quoteItem.weightG) || 0) / 1000) * 2200
+      : Number(quoteItem.fixedLogisticsDa) || 0;
+  const finalPrice = purchaseDa * coefficient + logisticsDa;
+  const estimatedProfit = finalPrice - purchaseDa - logisticsDa;
+  return { coefficient, purchaseDa, logisticsDa, finalPrice, estimatedProfit };
+}
+
+function getIdentifiers(quoteItem) {
+  return [
+    quoteItem.productId ? `ID: ${quoteItem.productId}` : "",
+    quoteItem.sku ? `SKU: ${quoteItem.sku}` : "",
+    quoteItem.productReference ? `Réf: ${quoteItem.productReference}` : "",
+  ].filter(Boolean);
+}
+
+const IMAGE_DATABASE = "yunas-shop-quote-images";
+const IMAGE_STORE = "captures";
+
+function openImageDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IMAGE_DATABASE, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(IMAGE_STORE)) {
+        request.result.createObjectStore(IMAGE_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function readStoredImage(key) {
+  const database = await openImageDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(IMAGE_STORE, "readonly");
+    const request = transaction.objectStore(IMAGE_STORE).get(key);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+    transaction.oncomplete = () => database.close();
+  });
+}
+
+async function storeImage(key, blob) {
+  const database = await openImageDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(IMAGE_STORE, "readwrite");
+    transaction.objectStore(IMAGE_STORE).put(blob, key);
+    transaction.oncomplete = () => {
+      database.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function removeStoredImage(key) {
+  const database = await openImageDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(IMAGE_STORE, "readwrite");
+    transaction.objectStore(IMAGE_STORE).delete(key);
+    transaction.oncomplete = () => {
+      database.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+function loadImage(source) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(image.src);
+      resolve(image);
+    };
+    image.onerror = reject;
+    image.src = URL.createObjectURL(source);
+  });
+}
+
+async function compressCapture(file) {
+  const image = await loadImage(file);
+  const maximumSide = 1400;
+  const scale = Math.min(1, maximumSide / Math.max(image.width, image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(image.width * scale);
+  canvas.height = Math.round(image.height * scale);
+  canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("Image compression failed"))),
+      "image/jpeg",
+      0.84,
+    );
+  });
+}
+
+async function createPricedVisual(capture, quoteItem) {
+  const image = await loadImage(capture);
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0);
+
+  const label = `${formatAmount(quoteItem.priceDa)} DA`;
+  const fontSize = Math.max(34, Math.round(canvas.width * 0.085));
+  context.font = `800 ${fontSize}px Arial, sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  const horizontalPadding = fontSize * 0.55;
+  const verticalPadding = fontSize * 0.34;
+  const labelWidth = context.measureText(label).width + horizontalPadding * 2;
+  const labelHeight = fontSize + verticalPadding * 2;
+  const x = canvas.width / 2;
+  const y = canvas.height / 2;
+  const left = x - labelWidth / 2;
+  const top = y - labelHeight / 2;
+  const radius = Math.min(24, labelHeight / 4);
+
+  context.fillStyle = "rgba(255, 255, 255, 0.96)";
+  context.beginPath();
+  context.roundRect(left, top, labelWidth, labelHeight, radius);
+  context.fill();
+  context.fillStyle = "#111111";
+  context.fillText(label, x, y + fontSize * 0.04);
+
+  const identifiers = getIdentifiers(quoteItem).join("  •  ");
+  if (identifiers) {
+    const identifierFontSize = Math.max(18, Math.round(canvas.width * 0.032));
+    context.font = `700 ${identifierFontSize}px Arial, sans-serif`;
+    const maxIdentifierWidth = canvas.width * 0.88;
+    let visibleIdentifiers = identifiers;
+    while (
+      visibleIdentifiers.length > 8 &&
+      context.measureText(visibleIdentifiers).width > maxIdentifierWidth
+    ) {
+      visibleIdentifiers = `${visibleIdentifiers.slice(0, -4)}…`;
+    }
+    const identifierWidth = Math.min(
+      maxIdentifierWidth,
+      context.measureText(visibleIdentifiers).width + identifierFontSize * 1.6,
+    );
+    const identifierHeight = identifierFontSize * 2.25;
+    const identifierLeft = (canvas.width - identifierWidth) / 2;
+    const identifierTop = canvas.height - identifierHeight - canvas.height * 0.045;
+    context.fillStyle = "rgba(255, 255, 255, 0.94)";
+    context.beginPath();
+    context.roundRect(
+      identifierLeft,
+      identifierTop,
+      identifierWidth,
+      identifierHeight,
+      Math.min(18, identifierHeight / 4),
+    );
+    context.fill();
+    context.fillStyle = "#3a2a2d";
+    context.font = `700 ${identifierFontSize}px Arial, sans-serif`;
+    context.fillText(
+      visibleIdentifiers,
+      canvas.width / 2,
+      identifierTop + identifierHeight / 2,
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("Visual creation failed"))),
+      "image/jpeg",
+      0.92,
+    );
+  });
+}
+
+function downloadVisual(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function whatsappMessage(item, details) {
   const total = formatAmount(details.totalDa);
   const deposit = formatAmount(details.depositDa);
@@ -62,15 +259,17 @@ function whatsappMessage(item, details) {
     item.locale === "ar"
       ? [
           `السلام عليكم، هذا عرض سعر طلبك ${item.reference} من Yuna’s Shop:`,
+          "أرسلت لكِ سعر كل منتج على صورته.",
           total ? `المبلغ الإجمالي: ${total} دج` : "",
-          deposit ? `التسبيق: ${deposit} دج` : "",
+          deposit ? `التسبيق 50٪ من المجموع: ${deposit} دج` : "",
           delay ? `المدة التقريبية: ${delay}` : "",
           "إذا وافقتِ على الطلب، أكّدي لنا هنا من فضلك 🤍",
         ]
       : [
           `Bonjour, voici le devis de votre demande ${item.reference} chez Yuna’s Shop :`,
+          "Je vous ai indiqué le prix directement sur chaque photo.",
           total ? `Montant total : ${total} DA` : "",
-          deposit ? `Acompte : ${deposit} DA` : "",
+          deposit ? `Acompte de 50 % sur le total : ${deposit} DA` : "",
           delay ? `Délai estimé : ${delay}` : "",
           "Si le devis vous convient, confirmez-nous ici s’il vous plaît 🤍",
         ];
@@ -143,14 +342,63 @@ function Login() {
 }
 
 function RequestCard({ item, onError }) {
-  const [totalDa, setTotalDa] = useState(item.totalDa || "");
-  const [depositDa, setDepositDa] = useState(item.depositDa || "");
+  const initialQuoteItems = (item.links || []).map((link, index) => {
+    const existing =
+      item.quoteItems?.find((quoteItem) => quoteItem.link === link) ||
+      item.quoteItems?.[index];
+    return {
+      link,
+      priceDa: existing?.priceDa || "",
+      productId: existing?.productId || "",
+      sku: existing?.sku || "",
+      productReference: existing?.productReference || "",
+      priceEur: existing?.priceEur || "",
+      rate: existing?.rate || 310,
+      logMode: existing?.logMode || "fixed",
+      weightG: existing?.weightG || "",
+      fixedLogisticsDa: existing?.fixedLogisticsDa || "",
+    };
+  });
+  const [quoteItems, setQuoteItems] = useState(initialQuoteItems);
+  const [captures, setCaptures] = useState({});
   const [estimatedDelay, setEstimatedDelay] = useState(item.estimatedDelay || "");
   const [privateNote, setPrivateNote] = useState(item.privateNote || "");
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [visualInProgress, setVisualInProgress] = useState("");
   const status = normalizeStatus(item.status);
+  const totalDa = useMemo(
+    () => quoteItems.reduce((total, quoteItem) => total + (Number(quoteItem.priceDa) || 0), 0),
+    [quoteItems],
+  );
+  const depositDa = totalDa ? Math.round(totalDa / 2) : 0;
   const details = { totalDa, depositDa, estimatedDelay, privateNote };
+
+  useEffect(() => {
+    let active = true;
+    const previewUrls = [];
+
+    Promise.all(
+      (item.links || []).map(async (link, index) => {
+        try {
+          const blob = await readStoredImage(`${item.id}:${index}:${link}`);
+          if (!blob) return null;
+          const previewUrl = URL.createObjectURL(blob);
+          previewUrls.push(previewUrl);
+          return [index, { blob, previewUrl }];
+        } catch {
+          return null;
+        }
+      }),
+    ).then((results) => {
+      if (active) setCaptures(Object.fromEntries(results.filter(Boolean)));
+    });
+
+    return () => {
+      active = false;
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [item.id, item.links]);
 
   async function updateRequest(fields, successMessage = false) {
     try {
@@ -171,8 +419,22 @@ function RequestCard({ item, onError }) {
   function saveDetails(extra = {}, successMessage = true) {
     return updateRequest(
       {
-        totalDa: totalDa ? Number(totalDa) : null,
-        depositDa: depositDa ? Number(depositDa) : null,
+        quoteItems: quoteItems.map((quoteItem) => ({
+          link: quoteItem.link,
+          priceDa: quoteItem.priceDa ? Number(quoteItem.priceDa) : null,
+          productId: quoteItem.productId.trim(),
+          sku: quoteItem.sku.trim(),
+          productReference: quoteItem.productReference.trim(),
+          priceEur: quoteItem.priceEur ? Number(quoteItem.priceEur) : null,
+          rate: quoteItem.rate ? Number(quoteItem.rate) : 310,
+          logMode: quoteItem.logMode,
+          weightG: quoteItem.weightG ? Number(quoteItem.weightG) : null,
+          fixedLogisticsDa: quoteItem.fixedLogisticsDa
+            ? Number(quoteItem.fixedLogisticsDa)
+            : null,
+        })),
+        totalDa: totalDa || null,
+        depositDa: depositDa || null,
         estimatedDelay: estimatedDelay.trim(),
         privateNote: privateNote.trim(),
         ...extra,
@@ -181,9 +443,84 @@ function RequestCard({ item, onError }) {
     );
   }
 
-  function changeTotal(value) {
-    setTotalDa(value);
-    setDepositDa(value ? String(Math.round(Number(value) / 2)) : "");
+  function changeQuoteItem(index, field, value) {
+    setQuoteItems((current) =>
+      current.map((quoteItem, quoteIndex) =>
+        quoteIndex === index ? { ...quoteItem, [field]: value } : quoteItem,
+      ),
+    );
+  }
+
+  function useSimulatedPrice(index) {
+    const simulation = calculateSimulatedPrice(quoteItems[index]);
+    changeQuoteItem(index, "priceDa", String(Math.round(simulation.finalPrice)));
+  }
+
+  async function addCapture(index, file) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      onError("Choisissez une capture au format image.");
+      return;
+    }
+    try {
+      const blob = await compressCapture(file);
+      const key = `${item.id}:${index}:${quoteItems[index].link}`;
+      await storeImage(key, blob);
+      setCaptures((current) => {
+        if (current[index]?.previewUrl) URL.revokeObjectURL(current[index].previewUrl);
+        return {
+          ...current,
+          [index]: { blob, previewUrl: URL.createObjectURL(blob) },
+        };
+      });
+      onError("");
+    } catch {
+      onError("La capture n’a pas pu être ajoutée. Réessayez avec une autre image.");
+    }
+  }
+
+  async function deleteCapture(index) {
+    try {
+      await removeStoredImage(`${item.id}:${index}:${quoteItems[index].link}`);
+      setCaptures((current) => {
+        const next = { ...current };
+        if (next[index]?.previewUrl) URL.revokeObjectURL(next[index].previewUrl);
+        delete next[index];
+        return next;
+      });
+    } catch {
+      onError("La capture n’a pas pu être supprimée.");
+    }
+  }
+
+  async function shareVisual(index) {
+    const capture = captures[index]?.blob;
+    const price = quoteItems[index]?.priceDa;
+    if (!capture || !Number(price)) {
+      onError("Ajoutez la capture et le prix de cet article avant de créer le visuel.");
+      return;
+    }
+    setVisualInProgress(String(index));
+    try {
+      const visual = await createPricedVisual(capture, quoteItems[index]);
+      const filename = `${item.reference}-article-${index + 1}.jpg`;
+      const file = new File([visual], filename, { type: "image/jpeg" });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Article ${index + 1} · ${item.reference}`,
+        });
+      } else {
+        downloadVisual(visual, filename);
+      }
+      onError("");
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        onError("Le visuel n’a pas pu être créé. Réessayez.");
+      }
+    } finally {
+      setVisualInProgress("");
+    }
   }
 
   async function copyLinks() {
@@ -216,44 +553,236 @@ function RequestCard({ item, onError }) {
       </div>
 
       <div className="request-links-heading">
-        <span>{(item.links || []).length} lien{(item.links || []).length > 1 ? "s" : ""}</span>
+        <span>{(item.links || []).length} article{(item.links || []).length > 1 ? "s" : ""}</span>
         <button type="button" onClick={copyLinks}>{copied ? "Liens copiés ✓" : "Copier tous les liens"}</button>
       </div>
-      <div className="request-links">
-        {(item.links || []).map((link, index) => (
-          <a href={link} target="_blank" rel="noreferrer" key={`${item.id}-${index}`}>
-            <span>{index + 1}</span>
-            <span>{link}</span>
-            <b aria-hidden="true">↗</b>
-          </a>
-        ))}
+      <p className="quote-workflow">
+        Ouvrez le lien, ajoutez la capture et saisissez le prix final. Le total et
+        l’acompte seront calculés pour toute la commande.
+      </p>
+      <div className="quote-items">
+        {quoteItems.map((quoteItem, index) => {
+          const simulation = calculateSimulatedPrice(quoteItem);
+          const identifiers = getIdentifiers(quoteItem);
+          return (
+            <section className="quote-item" key={`${item.id}-${index}`}>
+              <div className={`quote-capture ${captures[index] ? "has-capture" : ""}`}>
+                {captures[index] ? (
+                  <>
+                    <img src={captures[index].previewUrl} alt={`Capture de l’article ${index + 1}`} />
+                    {Number(quoteItem.priceDa) ? (
+                      <strong>{formatAmount(quoteItem.priceDa)} DA</strong>
+                    ) : null}
+                    {identifiers.length ? <small>{identifiers.join(" · ")}</small> : null}
+                  </>
+                ) : (
+                  <span>Capture<br />article {index + 1}</span>
+                )}
+              </div>
+              <div className="quote-item-fields">
+                <div className="quote-item-heading">
+                  <strong>Article {index + 1}</strong>
+                  <a href={quoteItem.link} target="_blank" rel="noreferrer">
+                    Ouvrir le produit ↗
+                  </a>
+                </div>
+                <p title={quoteItem.link}>{quoteItem.link}</p>
+
+                <div className="identifier-fields">
+                  <label>
+                    <span>ID produit</span>
+                    <input
+                      value={quoteItem.productId}
+                      onChange={(event) => changeQuoteItem(index, "productId", event.target.value)}
+                      placeholder="Ex. 12345678"
+                    />
+                  </label>
+                  <label>
+                    <span>SKU</span>
+                    <input
+                      value={quoteItem.sku}
+                      onChange={(event) => changeQuoteItem(index, "sku", event.target.value)}
+                      placeholder="Ex. sw220..."
+                    />
+                  </label>
+                  <label>
+                    <span>Référence</span>
+                    <input
+                      value={quoteItem.productReference}
+                      onChange={(event) =>
+                        changeQuoteItem(index, "productReference", event.target.value)
+                      }
+                      placeholder="Taille, couleur…"
+                    />
+                  </label>
+                </div>
+
+                <details className="price-simulator">
+                  <summary>
+                    <span>Simulateur de prix CRM</span>
+                    <strong>
+                      {simulation.finalPrice > 0
+                        ? `${formatAmount(simulation.finalPrice)} DA`
+                        : "Calculer"}
+                    </strong>
+                  </summary>
+                  <div className="simulator-body">
+                    <div className="simulator-main-fields">
+                      <label>
+                        <span>Prix achat (€)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={quoteItem.priceEur}
+                          onChange={(event) =>
+                            changeQuoteItem(index, "priceEur", event.target.value)
+                          }
+                          placeholder="0,00"
+                        />
+                      </label>
+                      <label>
+                        <span>Taux actuel</span>
+                        <input
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={quoteItem.rate}
+                          onChange={(event) => changeQuoteItem(index, "rate", event.target.value)}
+                        />
+                      </label>
+                    </div>
+                    <div className="simulator-info">
+                      <span>Coefficient : ×{simulation.coefficient}</span>
+                      <span>Achat : {formatAmount(simulation.purchaseDa) || "0"} DA</span>
+                    </div>
+                    <div className="logistics-mode">
+                      <span>Logistique estimée</span>
+                      <div>
+                        <button
+                          type="button"
+                          className={quoteItem.logMode === "fixed" ? "active" : ""}
+                          onClick={() => changeQuoteItem(index, "logMode", "fixed")}
+                        >
+                          Prix fixe
+                        </button>
+                        <button
+                          type="button"
+                          className={quoteItem.logMode === "weight" ? "active" : ""}
+                          onClick={() => changeQuoteItem(index, "logMode", "weight")}
+                        >
+                          Au poids
+                        </button>
+                      </div>
+                    </div>
+                    {quoteItem.logMode === "weight" ? (
+                      <label className="simulator-logistics-field">
+                        <span>Poids en grammes · 2 200 DA/kg</span>
+                        <input
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={quoteItem.weightG}
+                          onChange={(event) =>
+                            changeQuoteItem(index, "weightG", event.target.value)
+                          }
+                          placeholder="Ex. 250"
+                        />
+                      </label>
+                    ) : (
+                      <label className="simulator-logistics-field">
+                        <span>Montant fixe en DA</span>
+                        <input
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={quoteItem.fixedLogisticsDa}
+                          onChange={(event) =>
+                            changeQuoteItem(index, "fixedLogisticsDa", event.target.value)
+                          }
+                          placeholder="Ex. 720"
+                        />
+                      </label>
+                    )}
+                    <div className="simulator-result">
+                      <div>
+                        <span>Prix de vente conseillé</span>
+                        <strong>{formatAmount(simulation.finalPrice) || "0"} DA</strong>
+                      </div>
+                      <small>
+                        Bénéfice estimé : {formatAmount(simulation.estimatedProfit) || "0"} DA
+                      </small>
+                      <button
+                        type="button"
+                        disabled={simulation.finalPrice <= 0}
+                        onClick={() => useSimulatedPrice(index)}
+                      >
+                        Utiliser ce prix
+                      </button>
+                    </div>
+                  </div>
+                </details>
+
+                <label className="final-price-field">
+                  <span>Prix final affiché (DA)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="100"
+                    inputMode="numeric"
+                    value={quoteItem.priceDa}
+                    onChange={(event) => changeQuoteItem(index, "priceDa", event.target.value)}
+                    placeholder="Ex. 1 600"
+                  />
+                </label>
+                <div className="quote-item-actions">
+                  <label className="capture-button">
+                    {captures[index] ? "Remplacer la capture" : "Ajouter la capture"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => {
+                        addCapture(index, event.target.files?.[0]);
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {captures[index] ? (
+                    <>
+                      <button
+                        className="visual-button"
+                        type="button"
+                        disabled={!Number(quoteItem.priceDa) || visualInProgress === String(index)}
+                        onClick={() => shareVisual(index)}
+                      >
+                        {visualInProgress === String(index) ? "Création…" : "Partager le visuel"}
+                      </button>
+                      <button
+                        className="remove-capture-button"
+                        type="button"
+                        onClick={() => deleteCapture(index)}
+                      >
+                        Supprimer
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          );
+        })}
       </div>
 
-      <div className="quote-fields">
-        <label>
-          <span>Total (DA)</span>
-          <input
-            type="number"
-            min="0"
-            step="100"
-            inputMode="numeric"
-            value={totalDa}
-            onChange={(event) => changeTotal(event.target.value)}
-            placeholder="Ex. 12 500"
-          />
-        </label>
-        <label>
-          <span>Acompte (DA)</span>
-          <input
-            type="number"
-            min="0"
-            step="100"
-            inputMode="numeric"
-            value={depositDa}
-            onChange={(event) => setDepositDa(event.target.value)}
-            placeholder="Calculé à 50 %"
-          />
-        </label>
+      <div className="quote-summary">
+        <div>
+          <span>Total de la commande</span>
+          <strong>{formatAmount(totalDa) || "0"} DA</strong>
+        </div>
+        <div>
+          <span>Acompte global · 50 %</span>
+          <strong>{formatAmount(depositDa) || "0"} DA</strong>
+        </div>
         <label>
           <span>Délai estimé</span>
           <input
@@ -285,7 +814,7 @@ function RequestCard({ item, onError }) {
           rel="noreferrer"
           onClick={() => saveDetails({ status: "quoted" }, false)}
         >
-          Envoyer le devis sur WhatsApp
+          Envoyer le total sur WhatsApp
         </a>
         <button
           className="archive-button"
