@@ -1,18 +1,19 @@
-# Yuna’s Shop — Demandes de liens
+# Yuna’s Shop — Demandes de prix
 
-Formulaire bilingue français/arabe permettant aux clientes d’envoyer leurs liens d’achat et leur numéro WhatsApp. Les demandes sont enregistrées dans Firebase puis traitées depuis un espace administratrice privé.
+Formulaire bilingue français/arabe permettant aux clientes d’envoyer le lien et/ou l’identifiant de chaque article, puis de choisir une réponse sur Instagram, Messenger ou WhatsApp. Les demandes sont enregistrées dans Firebase puis traitées depuis un espace administratrice privé.
 
 ## Fonctionnement
 
-- formulaire public limité à deux informations : liens + numéro WhatsApp ;
+- ajout de plusieurs articles, chacun avec un lien et/ou un ID, SKU ou une référence ;
+- choix du canal de réponse : Instagram, Messenger ou WhatsApp ;
 - interface française et arabe avec mise en page RTL ;
 - référence unique générée pour chaque demande ;
 - demandes stockées dans Firestore ;
 - espace `/admin` protégé par Firebase Authentication ;
 - suivi détaillé : nouvelle, vérification, prix envoyé, confirmée, refusée ou archivée ;
 - recherche et filtres par statut et date ;
-- devis avec total, acompte, délai et message WhatsApp prérempli ;
-- notes privées, copie groupée des liens et compteurs ;
+- devis avec total, acompte, délai et réponse adaptée au canal choisi ;
+- notes privées, copie groupée des articles et compteurs ;
 - notifications navigateur lorsque l’espace administratrice est ouvert.
 
 ## Installation
