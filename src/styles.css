@@ -264,12 +264,13 @@ button {
   font-size: 12px;
 }
 
-.whatsapp-heading {
+.contact-heading {
   margin-top: 26px;
 }
 
 textarea,
 .phone-field,
+.contact-field,
 .login-card input {
   width: 100%;
   border: 1px solid var(--border);
@@ -293,11 +294,177 @@ input::placeholder {
 
 textarea:focus,
 .phone-field:focus-within,
+.contact-field:focus,
 .login-card input:focus {
   border-color: var(--plum);
   outline: none;
   background: #fff;
   box-shadow: 0 0 0 4px rgba(104, 40, 63, 0.09);
+}
+
+.product-request-list {
+  display: grid;
+  gap: 12px;
+}
+
+.product-request-card {
+  border: 1px solid #eaded5;
+  border-radius: 16px;
+  padding: 15px;
+  background: rgba(250, 246, 240, 0.72);
+}
+
+.product-request-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.product-request-heading strong {
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+}
+
+.product-request-heading button {
+  border: 0;
+  padding: 3px 0;
+  background: transparent;
+  color: #a15a68;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.product-request-card label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 5px 12px;
+}
+
+.product-request-card label > span {
+  color: #321d23;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.product-request-card label > small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.product-request-card input,
+.contact-field {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 14px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--cacao);
+}
+
+.product-request-card label > input {
+  grid-column: 1 / -1;
+}
+
+.product-request-card input:focus {
+  border-color: var(--plum);
+  box-shadow: 0 0 0 3px rgba(104, 40, 63, 0.08);
+}
+
+.product-or {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 9px 0;
+  color: #a88d8e;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.product-or::before,
+.product-or::after {
+  height: 1px;
+  flex: 1;
+  background: #e8ddd5;
+  content: "";
+}
+
+.add-product-button {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  border: 1px dashed var(--rose);
+  border-radius: 13px;
+  background: rgba(255, 253, 249, 0.6);
+  color: var(--plum);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.add-product-button:hover {
+  border-style: solid;
+  background: #fff;
+}
+
+.response-channel-fieldset {
+  margin: 26px 0 0;
+  border: 0;
+  padding: 0;
+}
+
+.response-channel-fieldset legend {
+  margin-bottom: 11px;
+  color: #321d23;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.response-channel-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.response-channel-options label {
+  position: relative;
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  transition: 160ms ease;
+}
+
+.response-channel-options label.selected {
+  border-color: var(--plum);
+  background: #f7e9e9;
+  box-shadow: 0 0 0 2px rgba(104, 40, 63, 0.07);
+  color: var(--plum);
+}
+
+.response-channel-options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contact-field {
+  min-height: 58px;
 }
 
 .link-counter {
@@ -990,10 +1157,27 @@ textarea:focus,
   text-decoration: none;
 }
 
-.whatsapp-button {
+.whatsapp-button,
+.response-button {
   border: 1px solid var(--plum);
   background: var(--plum);
   color: #fff;
+}
+
+.response-instagram {
+  border-color: #9d2e74;
+  background: linear-gradient(135deg, #7c3aa7, #c43777);
+}
+
+.response-messenger {
+  border-color: #1376db;
+  background: #1376db;
+}
+
+.copy-message-button {
+  border: 1px solid #b7a3d0;
+  background: #f4effa;
+  color: #65458b;
 }
 
 .save-button {
@@ -1118,6 +1302,18 @@ textarea:focus,
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.quote-item-fields > .client-identifier {
+  margin-top: -6px;
+  overflow: visible;
+  color: #8a5664;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.client-identifier strong {
+  color: var(--plum);
 }
 
 .identifier-fields,
