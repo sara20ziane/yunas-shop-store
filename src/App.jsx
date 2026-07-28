@@ -33,6 +33,8 @@ const copy = {
     sending: "Envoi en cours…",
     trust: "Prix et disponibilité vérifiés avant notre réponse.",
     privacy: "Aucun pseudo ni numéro à saisir.",
+    linkedFormNotice:
+      "Cette demande est déjà liée à notre conversation. Ajoutez seulement vos articles.",
     invalidProduct: "Ajoutez un lien ou un ID / SKU / référence pour chaque article.",
     invalidLink: "Vérifiez les liens : ils doivent commencer par http:// ou https://.",
     tooManyProducts: "Vous pouvez envoyer jusqu’à 30 articles par demande.",
@@ -78,6 +80,8 @@ const copy = {
     sending: "جارٍ الإرسال…",
     trust: "نتحقق من السعر والتوفر قبل الرد عليك.",
     privacy: "لا حاجة لكتابة اسم الحساب أو رقم الهاتف.",
+    linkedFormNotice:
+      "هذا الطلب مرتبط مسبقاً بمحادثتنا. أضيفي المنتجات فقط.",
     invalidProduct: "أضيفي رابطاً أو ID / SKU / مرجعاً لكل منتج.",
     invalidLink: "تحققي من الروابط: يجب أن تبدأ بـ http:// أو https://.",
     tooManyProducts: "يمكنك إرسال 30 منتجاً كحد أقصى في الطلب الواحد.",
@@ -314,6 +318,17 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
             </div>
           ) : (
             <form onSubmit={submit} noValidate>
+              {isLinkedConversation ? (
+                <div className="linked-conversation-notice">
+                  <span aria-hidden="true">✓</span>
+                  <p>{t.linkedFormNotice}</p>
+                </div>
+              ) : null}
+              {invalidConversationLink ? (
+                <p className="form-error invalid-link-error" role="alert">
+                  {t.invalidConversationLink}
+                </p>
+              ) : null}
               <div className="field-heading">
                 <label>{t.productsLabel}</label>
                 <span>{t.productsHint}</span>

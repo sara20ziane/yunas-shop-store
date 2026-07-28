@@ -651,6 +651,42 @@ textarea:focus,
   text-underline-offset: 3px;
 }
 
+.linked-conversation-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(104, 40, 63, 0.16);
+  border-radius: 13px;
+  padding: 12px 13px;
+  background: rgba(244, 229, 229, 0.72);
+  color: var(--plum);
+}
+
+.linked-conversation-notice > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--plum);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.linked-conversation-notice p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.invalid-link-error {
+  margin: 0 0 18px;
+}
+
 .botanical {
   position: absolute;
   z-index: 1;
