@@ -20,24 +20,64 @@ service cloud.firestore {
 
     match /artifacts/yunas-shop-crm/public/data/linkRequests/{requestId} {
       allow create: if request.auth == null &&
-        request.resource.data.keys().hasOnly([
-          'reference',
-          'links',
-          'whatsapp',
-          'locale',
-          'status',
-          'createdAt',
-          'updatedAt'
-        ]) &&
         request.resource.data.reference is string &&
         request.resource.data.reference.size() >= 10 &&
         request.resource.data.reference.size() <= 24 &&
-        request.resource.data.links is list &&
-        request.resource.data.links.size() >= 1 &&
-        request.resource.data.links.size() <= 30 &&
-        request.resource.data.whatsapp is string &&
-        request.resource.data.whatsapp.size() >= 11 &&
-        request.resource.data.whatsapp.size() <= 15 &&
+        (
+          (
+            request.resource.data.keys().hasOnly([
+              'reference',
+              'links',
+              'whatsapp',
+              'locale',
+              'status',
+              'createdAt',
+              'updatedAt'
+            ]) &&
+            request.resource.data.links is list &&
+            request.resource.data.links.size() >= 1 &&
+            request.resource.data.links.size() <= 30 &&
+            request.resource.data.whatsapp is string &&
+            request.resource.data.whatsapp.size() >= 11 &&
+            request.resource.data.whatsapp.size() <= 15
+          ) ||
+          (
+            request.resource.data.keys().hasOnly([
+              'reference',
+              'requestItems',
+              'links',
+              'responseChannel',
+              'responseContact',
+              'whatsapp',
+              'locale',
+              'status',
+              'createdAt',
+              'updatedAt'
+            ]) &&
+            request.resource.data.requestItems is list &&
+            request.resource.data.requestItems.size() >= 1 &&
+            request.resource.data.requestItems.size() <= 30 &&
+            request.resource.data.links is list &&
+            request.resource.data.links.size() <= 30 &&
+            request.resource.data.responseChannel in ['instagram', 'messenger', 'whatsapp'] &&
+            request.resource.data.responseContact is string &&
+            request.resource.data.responseContact.size() >= 1 &&
+            request.resource.data.responseContact.size() <= 150 &&
+            request.resource.data.whatsapp is string &&
+            request.resource.data.whatsapp.size() <= 15 &&
+            (
+              (
+                request.resource.data.responseChannel == 'whatsapp' &&
+                request.resource.data.responseContact.matches('^213[567][0-9]{8}$') &&
+                request.resource.data.whatsapp == request.resource.data.responseContact
+              ) ||
+              (
+                request.resource.data.responseChannel != 'whatsapp' &&
+                request.resource.data.whatsapp == ''
+              )
+            )
+          )
+        ) &&
         request.resource.data.locale in ['fr', 'ar'] &&
         request.resource.data.status == 'new' &&
         request.resource.data.createdAt == request.time &&
