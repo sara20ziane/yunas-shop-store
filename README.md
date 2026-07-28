@@ -1,11 +1,13 @@
 # Yuna’s Shop — Demandes de prix
 
-Formulaire bilingue français/arabe permettant aux clientes d’envoyer le lien et/ou l’identifiant de chaque article, puis de choisir une réponse sur Instagram, Messenger ou WhatsApp. Les demandes sont enregistrées dans Firebase puis traitées depuis un espace administratrice privé.
+Formulaire bilingue français/arabe permettant aux clientes d’envoyer le lien et/ou l’identifiant de chaque article. Les demandes sont enregistrées dans Firebase puis traitées depuis un espace administratrice privé relié au parcours Meta.
 
 ## Fonctionnement
 
 - ajout de plusieurs articles, chacun avec un lien et/ou un ID, SKU ou une référence ;
-- choix du canal de réponse : Instagram, Messenger ou WhatsApp ;
+- lien privé généré depuis l’administration pour rattacher une demande à une conversation Meta ;
+- parcours public Story avec référence à transmettre dans la conversation ;
+- aucun pseudo ni numéro demandé à la cliente ;
 - interface française et arabe avec mise en page RTL ;
 - référence unique générée pour chaque demande ;
 - demandes stockées dans Firestore ;

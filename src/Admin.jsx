@@ -103,18 +103,31 @@ function getRequestProducts(item) {
 }
 
 function getResponseChannel(item) {
+  if (getRequestOrigin(item) !== "legacy") return "meta";
   return item.responseChannel || "whatsapp";
 }
 
 function getResponseContact(item) {
+  if (getRequestOrigin(item) !== "legacy") return "";
   return item.responseContact || item.whatsapp || "";
 }
 
-function getResponseChannelLabel(channel) {
+function getRequestOrigin(item) {
+  const contact = item.responseContact || "";
+  if (contact.startsWith("meta:")) return "meta-link";
+  if (contact.startsWith("story:")) return "public-story";
+  return "legacy";
+}
+
+function getResponseChannelLabel(channel, item) {
+  const origin = item ? getRequestOrigin(item) : "legacy";
+  if (origin === "meta-link") return "Conversation Meta liée";
+  if (origin === "public-story") return "Story · référence Meta";
   return {
     instagram: "Instagram",
     messenger: "Messenger",
     whatsapp: "WhatsApp",
+    meta: "Meta Business Suite",
   }[channel] || "WhatsApp";
 }
 
@@ -318,6 +331,9 @@ function quoteMessage(item, details) {
 function getResponseUrl(item, message) {
   const channel = getResponseChannel(item);
   const contact = getResponseContact(item).trim();
+  if (channel === "meta") {
+    return "https://business.facebook.com/latest/inbox/all";
+  }
   if (channel === "whatsapp") {
     return `https://wa.me/${contact}?text=${encodeURIComponent(message)}`;
   }
@@ -344,6 +360,11 @@ function Brand() {
       <span>Yuna’s Shop</span>
     </a>
   );
+}
+
+function createConversationReference() {
+  const random = crypto.randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase();
+  return `YS-META-${random}`;
 }
 
 function Login() {
@@ -437,7 +458,8 @@ function RequestCard({ item, onError }) {
   const status = normalizeStatus(item.status);
   const responseChannel = getResponseChannel(item);
   const responseContact = getResponseContact(item);
-  const responseChannelLabel = getResponseChannelLabel(responseChannel);
+  const requestOrigin = getRequestOrigin(item);
+  const responseChannelLabel = getResponseChannelLabel(responseChannel, item);
   const totalDa = useMemo(
     () => quoteItems.reduce((total, quoteItem) => total + (Number(quoteItem.priceDa) || 0), 0),
     [quoteItems],
@@ -631,8 +653,10 @@ function RequestCard({ item, onError }) {
         <div>
           <strong>{item.reference}</strong>
           <span>
-            {formatDate(item.createdAt)} · {responseChannelLabel} ·{" "}
-            {responseChannel === "whatsapp" ? `+${responseContact}` : responseContact}
+            {formatDate(item.createdAt)} · {responseChannelLabel}
+            {responseContact
+              ? ` · ${responseChannel === "whatsapp" ? `+${responseContact}` : responseContact}`
+              : ""}
           </span>
         </div>
         <select
@@ -657,8 +681,11 @@ function RequestCard({ item, onError }) {
         </button>
       </div>
       <p className="quote-workflow">
-        Ouvrez le lien, ajoutez la capture et saisissez le prix final. Le total et
-        l’acompte seront calculés pour toute la commande.
+        {requestOrigin === "meta-link"
+          ? "Cette demande vient du lien unique envoyé dans la conversation Meta concernée."
+          : requestOrigin === "public-story"
+            ? `Retrouvez dans Meta le message contenant la référence ${item.reference}.`
+            : "Ouvrez le lien, ajoutez la capture et saisissez le prix final. Le total et l’acompte seront calculés pour toute la commande."}
       </p>
       <div className="quote-items">
         {quoteItems.map((quoteItem, index) => {
@@ -928,7 +955,9 @@ function RequestCard({ item, onError }) {
         >
           {responseChannel === "whatsapp"
             ? "Envoyer le total sur WhatsApp"
-            : `Ouvrir ${responseChannelLabel}`}
+            : responseChannel === "meta"
+              ? "Ouvrir Meta Business Suite"
+              : `Ouvrir ${responseChannelLabel}`}
         </a>
         <button
           className="archive-button"
@@ -952,6 +981,9 @@ function Dashboard({ user }) {
   const [notificationPermission, setNotificationPermission] = useState(
     typeof Notification === "undefined" ? "unsupported" : Notification.permission,
   );
+  const [conversationLink, setConversationLink] = useState("");
+  const [conversationReference, setConversationReference] = useState("");
+  const [conversationLinkCopied, setConversationLinkCopied] = useState(false);
   const firstSnapshot = useRef(true);
 
   useEffect(() => {
@@ -981,7 +1013,7 @@ function Dashboard({ user }) {
             .forEach((change) => {
               const request = change.doc.data();
               const notification = new Notification("Nouvelle demande Yuna’s Shop", {
-                body: `${request.reference} · ${getRequestProducts(request).length} article(s) · ${getResponseChannelLabel(getResponseChannel(request))}`,
+                body: `${request.reference} · ${getRequestProducts(request).length} article(s) · ${getResponseChannelLabel(getResponseChannel(request), request)}`,
                 icon: "/logo-yunas-shop.jpg",
               });
               notification.onclick = () => window.focus();
@@ -1037,6 +1069,7 @@ function Dashboard({ user }) {
         item.whatsapp,
         item.responseContact,
         item.responseChannel,
+        getRequestOrigin(item),
         ...(item.links || []),
         ...(item.requestItems || []).flatMap((product) =>
           typeof product === "string"
@@ -1063,6 +1096,25 @@ function Dashboard({ user }) {
     setNotificationPermission(permission);
   }
 
+  async function copyConversationLink(link) {
+    try {
+      await navigator.clipboard.writeText(link);
+      setConversationLinkCopied(true);
+      window.setTimeout(() => setConversationLinkCopied(false), 2000);
+      setError("");
+    } catch {
+      setError("Le lien n’a pas pu être copié sur cet appareil.");
+    }
+  }
+
+  async function createConversationLink() {
+    const nextReference = createConversationReference();
+    const nextLink = `${window.location.origin}/d/${nextReference}`;
+    setConversationReference(nextReference);
+    setConversationLink(nextLink);
+    await copyConversationLink(nextLink);
+  }
+
   return (
     <main className="admin-shell">
       <header className="admin-header">
@@ -1079,6 +1131,31 @@ function Dashboard({ user }) {
           <button type="button" onClick={() => signOut(auth)}>Déconnexion</button>
         </div>
       </header>
+
+      <section className="meta-link-panel" aria-label="Créer un lien pour une conversation Meta">
+        <div>
+          <span className="meta-link-kicker">Lien privé par conversation</span>
+          <h2>Créer une demande liée à Meta</h2>
+          <p>
+            Ouvre la conversation concernée, crée le lien puis colle-le dans ton message.
+            La cliente ne saisira ni pseudo ni numéro.
+          </p>
+        </div>
+        <div className="meta-link-actions">
+          <button className="meta-link-create" type="button" onClick={createConversationLink}>
+            Créer et copier le lien
+          </button>
+          {conversationLink ? (
+            <div className="generated-meta-link">
+              <span>Référence <strong>{conversationReference}</strong></span>
+              <input value={conversationLink} readOnly aria-label="Lien Meta généré" />
+              <button type="button" onClick={() => copyConversationLink(conversationLink)}>
+                {conversationLinkCopied ? "Copié ✓" : "Copier à nouveau"}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </section>
 
       <section className="admin-stats" aria-label="Résumé des demandes">
         <button type="button" onClick={() => setStatusFilter("active")}>
