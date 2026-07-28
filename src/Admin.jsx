@@ -81,10 +81,45 @@ function roundToNearestHundred(value) {
 
 function getIdentifiers(quoteItem) {
   return [
+    quoteItem.clientIdentifier ? `Cliente: ${quoteItem.clientIdentifier}` : "",
     quoteItem.productId ? `ID: ${quoteItem.productId}` : "",
     quoteItem.sku ? `SKU: ${quoteItem.sku}` : "",
     quoteItem.productReference ? `Réf: ${quoteItem.productReference}` : "",
   ].filter(Boolean);
+}
+
+function getRequestProducts(item) {
+  if (Array.isArray(item.requestItems) && item.requestItems.length) {
+    return item.requestItems.map((product) =>
+      typeof product === "string"
+        ? { link: product, identifier: "" }
+        : {
+            link: product?.link || "",
+            identifier: product?.identifier || "",
+          },
+    );
+  }
+  return (item.links || []).map((link) => ({ link, identifier: "" }));
+}
+
+function getResponseChannel(item) {
+  return item.responseChannel || "whatsapp";
+}
+
+function getResponseContact(item) {
+  return item.responseContact || item.whatsapp || "";
+}
+
+function getResponseChannelLabel(channel) {
+  return {
+    instagram: "Instagram",
+    messenger: "Messenger",
+    whatsapp: "WhatsApp",
+  }[channel] || "WhatsApp";
+}
+
+function getCaptureKey(itemId, index, quoteItem) {
+  return `${itemId}:${index}:${quoteItem.link || quoteItem.clientIdentifier || "article"}`;
 }
 
 const IMAGE_DATABASE = "yunas-shop-quote-images";
@@ -255,7 +290,7 @@ function downloadVisual(blob, filename) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function whatsappMessage(item, details) {
+function quoteMessage(item, details) {
   const total = formatAmount(details.totalDa);
   const deposit = formatAmount(details.depositDa);
   const delay = details.estimatedDelay?.trim();
@@ -277,7 +312,29 @@ function whatsappMessage(item, details) {
           delay ? `Délai estimé : ${delay}` : "",
           "Si le devis vous convient, confirmez-nous ici s’il vous plaît 🤍",
         ];
-  return `https://wa.me/${item.whatsapp}?text=${encodeURIComponent(lines.filter(Boolean).join("\n"))}`;
+  return lines.filter(Boolean).join("\n");
+}
+
+function getResponseUrl(item, message) {
+  const channel = getResponseChannel(item);
+  const contact = getResponseContact(item).trim();
+  if (channel === "whatsapp") {
+    return `https://wa.me/${contact}?text=${encodeURIComponent(message)}`;
+  }
+  if (channel === "instagram") {
+    const username = contact.replace(/^@/, "");
+    return `https://www.instagram.com/${encodeURIComponent(username)}/`;
+  }
+  try {
+    const url = new URL(contact);
+    return url.href;
+  } catch {
+    const username = contact.replace(/^@/, "");
+    if (/^[A-Za-z0-9._-]+$/.test(username)) {
+      return `https://m.me/${encodeURIComponent(username)}`;
+    }
+    return `https://www.facebook.com/search/top?q=${encodeURIComponent(contact)}`;
+  }
 }
 
 function Brand() {
@@ -346,12 +403,18 @@ function Login() {
 }
 
 function RequestCard({ item, onError }) {
-  const initialQuoteItems = (item.links || []).map((link, index) => {
+  const requestProducts = getRequestProducts(item);
+  const initialQuoteItems = requestProducts.map((product, index) => {
     const existing =
-      item.quoteItems?.find((quoteItem) => quoteItem.link === link) ||
+      (product.link
+        ? item.quoteItems?.find((quoteItem) => quoteItem.link === product.link)
+        : item.quoteItems?.find(
+            (quoteItem) => quoteItem.clientIdentifier === product.identifier,
+          )) ||
       item.quoteItems?.[index];
     return {
-      link,
+      link: product.link,
+      clientIdentifier: product.identifier || existing?.clientIdentifier || "",
       priceDa: existing?.priceDa || "",
       productId: existing?.productId || "",
       sku: existing?.sku || "",
@@ -369,8 +432,12 @@ function RequestCard({ item, onError }) {
   const [privateNote, setPrivateNote] = useState(item.privateNote || "");
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [messageCopied, setMessageCopied] = useState(false);
   const [visualInProgress, setVisualInProgress] = useState("");
   const status = normalizeStatus(item.status);
+  const responseChannel = getResponseChannel(item);
+  const responseContact = getResponseContact(item);
+  const responseChannelLabel = getResponseChannelLabel(responseChannel);
   const totalDa = useMemo(
     () => quoteItems.reduce((total, quoteItem) => total + (Number(quoteItem.priceDa) || 0), 0),
     [quoteItems],
@@ -383,9 +450,9 @@ function RequestCard({ item, onError }) {
     const previewUrls = [];
 
     Promise.all(
-      (item.links || []).map(async (link, index) => {
+      quoteItems.map(async (quoteItem, index) => {
         try {
-          const blob = await readStoredImage(`${item.id}:${index}:${link}`);
+          const blob = await readStoredImage(getCaptureKey(item.id, index, quoteItem));
           if (!blob) return null;
           const previewUrl = URL.createObjectURL(blob);
           previewUrls.push(previewUrl);
@@ -402,7 +469,7 @@ function RequestCard({ item, onError }) {
       active = false;
       previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [item.id, item.links]);
+  }, [item.id]);
 
   async function updateRequest(fields, successMessage = false) {
     try {
@@ -425,6 +492,7 @@ function RequestCard({ item, onError }) {
       {
         quoteItems: quoteItems.map((quoteItem) => ({
           link: quoteItem.link,
+          clientIdentifier: quoteItem.clientIdentifier.trim(),
           priceDa: quoteItem.priceDa ? Number(quoteItem.priceDa) : null,
           productId: quoteItem.productId.trim(),
           sku: quoteItem.sku.trim(),
@@ -468,7 +536,7 @@ function RequestCard({ item, onError }) {
     }
     try {
       const blob = await compressCapture(file);
-      const key = `${item.id}:${index}:${quoteItems[index].link}`;
+      const key = getCaptureKey(item.id, index, quoteItems[index]);
       await storeImage(key, blob);
       setCaptures((current) => {
         if (current[index]?.previewUrl) URL.revokeObjectURL(current[index].previewUrl);
@@ -485,7 +553,7 @@ function RequestCard({ item, onError }) {
 
   async function deleteCapture(index) {
     try {
-      await removeStoredImage(`${item.id}:${index}:${quoteItems[index].link}`);
+      await removeStoredImage(getCaptureKey(item.id, index, quoteItems[index]));
       setCaptures((current) => {
         const next = { ...current };
         if (next[index]?.previewUrl) URL.revokeObjectURL(next[index].previewUrl);
@@ -527,13 +595,33 @@ function RequestCard({ item, onError }) {
     }
   }
 
-  async function copyLinks() {
+  async function copyProducts() {
     try {
-      await navigator.clipboard.writeText((item.links || []).join("\n"));
+      const productText = requestProducts
+        .map((product, index) =>
+          [
+            `Article ${index + 1}`,
+            product.link,
+            product.identifier ? `ID / SKU / Réf : ${product.identifier}` : "",
+          ].filter(Boolean).join("\n"),
+        )
+        .join("\n\n");
+      await navigator.clipboard.writeText(productText);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      onError("Impossible de copier les liens sur cet appareil.");
+      onError("Impossible de copier les articles sur cet appareil.");
+    }
+  }
+
+  async function copyMessage() {
+    try {
+      await navigator.clipboard.writeText(quoteMessage(item, details));
+      setMessageCopied(true);
+      window.setTimeout(() => setMessageCopied(false), 1800);
+      onError("");
+    } catch {
+      onError("Impossible de copier le message sur cet appareil.");
     }
   }
 
@@ -542,7 +630,10 @@ function RequestCard({ item, onError }) {
       <div className="request-topline">
         <div>
           <strong>{item.reference}</strong>
-          <span>{formatDate(item.createdAt)} · +{item.whatsapp}</span>
+          <span>
+            {formatDate(item.createdAt)} · {responseChannelLabel} ·{" "}
+            {responseChannel === "whatsapp" ? `+${responseContact}` : responseContact}
+          </span>
         </div>
         <select
           className={`status-select ${status}`}
@@ -557,8 +648,13 @@ function RequestCard({ item, onError }) {
       </div>
 
       <div className="request-links-heading">
-        <span>{(item.links || []).length} article{(item.links || []).length > 1 ? "s" : ""}</span>
-        <button type="button" onClick={copyLinks}>{copied ? "Liens copiés ✓" : "Copier tous les liens"}</button>
+        <span>
+          {requestProducts.length} article{requestProducts.length > 1 ? "s" : ""} · réponse{" "}
+          {responseChannelLabel}
+        </span>
+        <button type="button" onClick={copyProducts}>
+          {copied ? "Articles copiés ✓" : "Copier tous les articles"}
+        </button>
       </div>
       <p className="quote-workflow">
         Ouvrez le lien, ajoutez la capture et saisissez le prix final. Le total et
@@ -586,11 +682,18 @@ function RequestCard({ item, onError }) {
               <div className="quote-item-fields">
                 <div className="quote-item-heading">
                   <strong>Article {index + 1}</strong>
-                  <a href={quoteItem.link} target="_blank" rel="noreferrer">
-                    Ouvrir le produit ↗
-                  </a>
+                  {quoteItem.link ? (
+                    <a href={quoteItem.link} target="_blank" rel="noreferrer">
+                      Ouvrir le produit ↗
+                    </a>
+                  ) : null}
                 </div>
-                <p title={quoteItem.link}>{quoteItem.link}</p>
+                {quoteItem.link ? <p title={quoteItem.link}>{quoteItem.link}</p> : null}
+                {quoteItem.clientIdentifier ? (
+                  <p className="client-identifier">
+                    Code transmis par la cliente : <strong>{quoteItem.clientIdentifier}</strong>
+                  </p>
+                ) : null}
 
                 <div className="identifier-fields">
                   <label>
@@ -811,14 +914,21 @@ function RequestCard({ item, onError }) {
         <button className="save-button" type="button" onClick={() => saveDetails()}>
           {saved ? "Enregistré ✓" : "Enregistrer"}
         </button>
+        {responseChannel !== "whatsapp" ? (
+          <button className="copy-message-button" type="button" onClick={copyMessage}>
+            {messageCopied ? "Message copié ✓" : "Copier le message"}
+          </button>
+        ) : null}
         <a
-          className="whatsapp-button"
-          href={whatsappMessage(item, details)}
+          className={`response-button response-${responseChannel}`}
+          href={getResponseUrl(item, quoteMessage(item, details))}
           target="_blank"
           rel="noreferrer"
           onClick={() => saveDetails({ status: "quoted" }, false)}
         >
-          Envoyer le total sur WhatsApp
+          {responseChannel === "whatsapp"
+            ? "Envoyer le total sur WhatsApp"
+            : `Ouvrir ${responseChannelLabel}`}
         </a>
         <button
           className="archive-button"
@@ -871,7 +981,7 @@ function Dashboard({ user }) {
             .forEach((change) => {
               const request = change.doc.data();
               const notification = new Notification("Nouvelle demande Yuna’s Shop", {
-                body: `${request.reference} · ${(request.links || []).length} lien(s)`,
+                body: `${request.reference} · ${getRequestProducts(request).length} article(s) · ${getResponseChannelLabel(getResponseChannel(request))}`,
                 icon: "/logo-yunas-shop.jpg",
               });
               notification.onclick = () => window.focus();
@@ -903,7 +1013,7 @@ function Dashboard({ user }) {
       ? `(${counts.new}) Nouvelles demandes | Yuna’s Shop`
       : "Demandes | Yuna’s Shop";
     return () => {
-      document.title = "Yuna’s Shop | Envoyez vos liens";
+      document.title = "Yuna’s Shop | Envoyez vos articles";
     };
   }, [counts.new]);
 
@@ -925,7 +1035,20 @@ function Dashboard({ user }) {
       const searchable = [
         item.reference,
         item.whatsapp,
+        item.responseContact,
+        item.responseChannel,
         ...(item.links || []),
+        ...(item.requestItems || []).flatMap((product) =>
+          typeof product === "string"
+            ? [product]
+            : [product?.link, product?.identifier],
+        ),
+        ...(item.quoteItems || []).flatMap((product) => [
+          product?.clientIdentifier,
+          product?.productId,
+          product?.sku,
+          product?.productReference,
+        ]),
       ].join(" ").toLowerCase().replace(/\s/g, "");
       const matchesSearch = !normalizedSearch || searchable.includes(normalizedSearch);
       const createdAt = item.createdAt?.toDate?.().getTime();
@@ -982,7 +1105,7 @@ function Dashboard({ user }) {
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Référence, téléphone ou lien"
+            placeholder="Référence, contact, lien, ID ou SKU"
           />
         </label>
         <label>
@@ -1012,7 +1135,7 @@ function Dashboard({ user }) {
         <div className="admin-empty">
           <span>♡</span>
           <h2>{items.length ? "Aucune demande ne correspond aux filtres" : "Aucune demande pour le moment"}</h2>
-          <p>{items.length ? "Modifiez la recherche ou les filtres." : "Les nouveaux liens apparaîtront ici automatiquement."}</p>
+          <p>{items.length ? "Modifiez la recherche ou les filtres." : "Les nouvelles demandes apparaîtront ici automatiquement."}</p>
         </div>
       ) : null}
 
