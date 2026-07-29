@@ -763,7 +763,8 @@ textarea:focus,
 .is-arabic .field-heading label,
 .is-arabic .success-panel h2,
 .is-arabic .order-process h2,
-.is-arabic .order-process h3 {
+.is-arabic .order-process h3,
+.is-arabic .delivery-tariffs h2 {
   font-family: Tahoma, Arial, sans-serif;
 }
 
@@ -781,28 +782,41 @@ textarea:focus,
   justify-self: start;
 }
 
-.order-process {
+.order-overview {
   position: relative;
   z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.34fr);
   max-width: 1380px;
-  margin: 14px auto 72px;
+  align-items: stretch;
+  gap: 16px;
+  margin: 30px auto 8px;
+}
+
+.order-process,
+.delivery-tariffs {
   border: 1px solid rgba(203, 178, 157, 0.72);
-  border-radius: 34px;
-  padding: clamp(30px, 4.5vw, 58px);
+  border-radius: 26px;
   background:
     radial-gradient(circle at 90% 8%, rgba(207, 168, 174, 0.18), transparent 28%),
-    rgba(255, 253, 249, 0.82);
-  box-shadow: 0 20px 55px rgba(87, 28, 51, 0.07);
+    rgba(255, 253, 249, 0.9);
+  box-shadow: 0 14px 38px rgba(87, 28, 51, 0.07);
   backdrop-filter: blur(12px);
+}
+
+.order-process {
+  padding: 24px;
 }
 
 .order-process-heading {
   display: grid;
-  max-width: 730px;
-  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 5px 18px;
 }
 
 .order-process-heading .eyebrow {
+  grid-column: 1 / -1;
   margin-bottom: 0;
 }
 
@@ -810,7 +824,7 @@ textarea:focus,
   margin: 0;
   color: var(--plum-deep);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(36px, 4vw, 55px);
+  font-size: clamp(27px, 2.5vw, 38px);
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 1.1;
@@ -819,48 +833,49 @@ textarea:focus,
 .order-process-heading > p:last-child {
   margin: 0;
   color: var(--muted);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .order-process-list {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin: 34px 0 0;
+  gap: 8px;
+  margin: 19px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .order-process-list li {
   display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
   align-content: start;
-  gap: 20px;
+  gap: 9px;
   min-width: 0;
   border: 1px solid #eaded5;
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 12px 10px;
   background: rgba(255, 255, 255, 0.75);
 }
 
 .order-step-number {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   border-radius: 50%;
   background: rgba(207, 168, 174, 0.27);
   color: var(--plum);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .order-process h3 {
-  margin: 0 0 8px;
+  margin: 1px 0 5px;
   color: var(--plum-deep);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1.25;
 }
 
@@ -868,39 +883,39 @@ textarea:focus,
 .order-reference-note p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .order-reference-note {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 12px;
   border: 1px solid rgba(104, 40, 63, 0.16);
-  border-radius: 18px;
-  padding: 17px 18px;
+  border-radius: 13px;
+  padding: 11px 12px;
   background: rgba(244, 229, 229, 0.68);
 }
 
 .order-reference-note > span {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
   background: var(--plum);
   color: #fff;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .order-reference-note strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--plum);
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .order-process-notice {
@@ -908,15 +923,143 @@ textarea:focus,
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: 18px 0 0;
+  margin: 10px 0 0;
   color: #6e5e5b;
-  font-size: 12px;
+  font-size: 10px;
   text-align: center;
 }
 
 .order-process-notice span {
   color: #4f9a73;
   font-weight: 900;
+}
+
+.delivery-tariffs {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.delivery-tariffs-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.delivery-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(207, 168, 174, 0.24);
+  font-size: 20px;
+}
+
+.delivery-tariffs .eyebrow {
+  margin: 0 0 6px;
+}
+
+.delivery-tariffs h2 {
+  margin: 0;
+  color: var(--plum-deep);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.wilaya-select {
+  display: grid;
+  gap: 7px;
+  margin-top: 19px;
+}
+
+.wilaya-select > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wilaya-select select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 12px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--cacao);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wilaya-select select:focus {
+  border-color: var(--plum);
+  box-shadow: 0 0 0 3px rgba(104, 40, 63, 0.08);
+}
+
+.delivery-price-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.delivery-price-grid > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  border: 1px solid #eaded5;
+  border-radius: 13px;
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.delivery-price-grid > div > span {
+  color: var(--rose);
+  font-size: 16px;
+}
+
+.delivery-price-grid small {
+  min-height: 25px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.delivery-price-grid strong {
+  color: var(--plum);
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.delivery-prompt {
+  display: grid;
+  min-height: 84px;
+  place-items: center;
+  margin: 12px 0 0;
+  border: 1px dashed var(--rose);
+  border-radius: 13px;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.delivery-notice {
+  margin: auto 0 0;
+  padding-top: 11px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .site-footer {
@@ -1894,11 +2037,50 @@ textarea:focus,
     padding: 28px 24px 46px;
   }
 
+  .order-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-tariffs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+    align-items: center;
+    gap: 14px 22px;
+  }
+
+  .delivery-tariffs-heading,
+  .delivery-notice {
+    grid-column: 1;
+  }
+
+  .wilaya-select,
+  .delivery-price-grid,
+  .delivery-prompt {
+    grid-column: 2;
+  }
+
+  .wilaya-select {
+    grid-row: 1;
+    margin-top: 0;
+  }
+
+  .delivery-price-grid,
+  .delivery-prompt {
+    grid-row: 2 / span 2;
+    margin-top: 0;
+  }
+
+  .delivery-notice {
+    margin-top: 0;
+    padding-top: 0;
+    text-align: start;
+  }
+
   .hero {
     grid-template-columns: 1fr;
     gap: 42px;
     min-height: auto;
-    padding-top: 74px;
+    padding-top: 54px;
   }
 
   .form-card,
@@ -1959,9 +2141,87 @@ textarea:focus,
     padding: 8px 12px;
   }
 
+  .order-overview {
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .order-process,
+  .delivery-tariffs {
+    border-radius: 22px;
+  }
+
+  .order-process {
+    margin: 0;
+    padding: 22px 16px;
+  }
+
+  .order-process-heading {
+    display: grid;
+    gap: 7px;
+  }
+
+  .order-process h2 {
+    font-size: 30px;
+  }
+
+  .order-process-heading > p:last-child {
+    font-size: 11px;
+  }
+
+  .order-process-list {
+    grid-template-columns: 1fr;
+    margin-top: 18px;
+  }
+
+  .order-process-list li,
+  .order-process-list li:last-child {
+    grid-column: auto;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .order-process h3 {
+    font-size: 14px;
+  }
+
+  .order-process-list p,
+  .order-reference-note p {
+    font-size: 10px;
+  }
+
+  .order-reference-note {
+    padding: 12px;
+  }
+
+  .delivery-tariffs {
+    display: flex;
+    padding: 20px 16px;
+  }
+
+  .delivery-tariffs h2 {
+    font-size: 23px;
+  }
+
+  .wilaya-select {
+    margin-top: 18px;
+  }
+
+  .delivery-price-grid,
+  .delivery-prompt {
+    margin-top: 11px;
+  }
+
+  .delivery-notice {
+    margin-top: 0;
+    padding-top: 11px;
+    text-align: center;
+  }
+
   .hero {
     gap: 30px;
-    padding-top: 50px;
+    padding-top: 38px;
   }
 
   .hero h1 {
@@ -1985,33 +2245,6 @@ textarea:focus,
   .form-card {
     border-radius: 24px;
     padding: 24px 18px;
-  }
-
-  .order-process {
-    margin: 32px auto 46px;
-    border-radius: 24px;
-    padding: 28px 18px;
-  }
-
-  .order-process h2 {
-    font-size: 36px;
-  }
-
-  .order-process-list {
-    grid-template-columns: 1fr;
-    margin-top: 24px;
-  }
-
-  .order-process-list li,
-  .order-process-list li:last-child {
-    grid-column: auto;
-    grid-template-columns: 42px minmax(0, 1fr);
-    gap: 14px;
-    padding: 17px;
-  }
-
-  .order-reference-note {
-    padding: 15px;
   }
 
   .field-heading {
