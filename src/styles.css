@@ -761,7 +761,9 @@ textarea:focus,
 .is-arabic .brand,
 .is-arabic .hero h1,
 .is-arabic .field-heading label,
-.is-arabic .success-panel h2 {
+.is-arabic .success-panel h2,
+.is-arabic .order-process h2,
+.is-arabic .order-process h3 {
   font-family: Tahoma, Arial, sans-serif;
 }
 
@@ -777,6 +779,144 @@ textarea:focus,
 
 .is-arabic .form-card {
   justify-self: start;
+}
+
+.order-process {
+  position: relative;
+  z-index: 3;
+  max-width: 1380px;
+  margin: 14px auto 72px;
+  border: 1px solid rgba(203, 178, 157, 0.72);
+  border-radius: 34px;
+  padding: clamp(30px, 4.5vw, 58px);
+  background:
+    radial-gradient(circle at 90% 8%, rgba(207, 168, 174, 0.18), transparent 28%),
+    rgba(255, 253, 249, 0.82);
+  box-shadow: 0 20px 55px rgba(87, 28, 51, 0.07);
+  backdrop-filter: blur(12px);
+}
+
+.order-process-heading {
+  display: grid;
+  max-width: 730px;
+  gap: 12px;
+}
+
+.order-process-heading .eyebrow {
+  margin-bottom: 0;
+}
+
+.order-process h2 {
+  margin: 0;
+  color: var(--plum-deep);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 4vw, 55px);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.order-process-heading > p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.order-process-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-process-list li {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  min-width: 0;
+  border: 1px solid #eaded5;
+  border-radius: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.order-step-number {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(207, 168, 174, 0.27);
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.order-process h3 {
+  margin: 0 0 8px;
+  color: var(--plum-deep);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.order-process-list p,
+.order-reference-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.order-reference-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 16px;
+  border: 1px solid rgba(104, 40, 63, 0.16);
+  border-radius: 18px;
+  padding: 17px 18px;
+  background: rgba(244, 229, 229, 0.68);
+}
+
+.order-reference-note > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--plum);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.order-reference-note strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--plum);
+  font-size: 13px;
+}
+
+.order-process-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px 0 0;
+  color: #6e5e5b;
+  font-size: 12px;
+  text-align: center;
+}
+
+.order-process-notice span {
+  color: #4f9a73;
+  font-weight: 900;
 }
 
 .site-footer {
@@ -1767,6 +1907,14 @@ textarea:focus,
     justify-self: center;
   }
 
+  .order-process-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .order-process-list li:last-child {
+    grid-column: 1 / -1;
+  }
+
   .admin-stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1837,6 +1985,33 @@ textarea:focus,
   .form-card {
     border-radius: 24px;
     padding: 24px 18px;
+  }
+
+  .order-process {
+    margin: 32px auto 46px;
+    border-radius: 24px;
+    padding: 28px 18px;
+  }
+
+  .order-process h2 {
+    font-size: 36px;
+  }
+
+  .order-process-list {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
+
+  .order-process-list li,
+  .order-process-list li:last-child {
+    grid-column: auto;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 14px;
+    padding: 17px;
+  }
+
+  .order-reference-note {
+    padding: 15px;
   }
 
   .field-heading {
