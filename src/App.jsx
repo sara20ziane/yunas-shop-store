@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import { collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db, firebaseReady } from "./firebase";
+import { DELIVERY_TARIFFS, WILAYAS_58 } from "./deliveryTariffs";
 
 const Admin = lazy(() => import("./Admin"));
 
@@ -89,6 +90,13 @@ const copy = {
       "Depuis ce lien public, copiez la référence affichée après l’envoi et transmettez-la dans votre conversation avec Yuna’s Shop.",
     orderNotice:
       "Le prix et la disponibilité sont toujours confirmés avant le paiement de l’acompte.",
+    deliveryEyebrow: "Tarifs de livraison",
+    deliveryTitle: "Combien coûte la livraison ?",
+    deliverySelect: "Choisissez votre wilaya",
+    deliveryPrompt: "Sélectionnez une wilaya pour afficher les deux tarifs.",
+    homeDelivery: "À domicile",
+    stopDeskDelivery: "Au bureau (stop desk)",
+    deliveryNotice: "Le tarif dépend de la wilaya et du mode de livraison choisi.",
   },
   ar: {
     language: "Français",
@@ -172,6 +180,13 @@ const copy = {
       "عند استعمال الرابط العام، انسخي رقم الطلب الذي يظهر بعد الإرسال وابعثيه لنا في محادثتك مع Yuna’s Shop.",
     orderNotice:
       "نؤكد لك دائماً السعر والتوفر قبل دفع التسبيق.",
+    deliveryEyebrow: "أسعار التوصيل",
+    deliveryTitle: "شحال سعر التوصيل؟",
+    deliverySelect: "اختاري الولاية",
+    deliveryPrompt: "اختاري الولاية باش يبانلك السعرين.",
+    homeDelivery: "للمنزل",
+    stopDeskDelivery: "للمكتب (Stop desk)",
+    deliveryNotice: "السعر يختلف حسب الولاية ونوع التوصيل المختار.",
   },
 };
 
@@ -216,9 +231,11 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
   const [fieldError, setFieldError] = useState("");
   const [reference, setReference] = useState("");
   const [referenceCopied, setReferenceCopied] = useState(false);
+  const [selectedWilaya, setSelectedWilaya] = useState("");
   const t = copy[locale];
   const isArabic = locale === "ar";
   const isLinkedConversation = Boolean(conversationReference);
+  const selectedTariffs = selectedWilaya ? DELIVERY_TARIFFS[selectedWilaya] : null;
 
   function updateProduct(index, field, value) {
     setProducts((current) =>
@@ -353,6 +370,94 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
         </div>
       </header>
 
+      <section className="order-overview" aria-labelledby="order-process-title">
+        <div className="order-process">
+          <div className="order-process-heading">
+            <p className="eyebrow">{t.orderEyebrow}</p>
+            <h2 id="order-process-title">{t.orderTitle}</h2>
+            <p>{t.orderIntro}</p>
+          </div>
+
+          <ol className="order-process-list">
+            {t.orderSteps.map((step, index) => (
+              <li key={step.title}>
+                <span className="order-step-number" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="order-reference-note">
+            <span aria-hidden="true">{isLinkedConversation ? "✓" : "↗"}</span>
+            <div>
+              <strong>
+                {isLinkedConversation ? t.linkedReferenceTitle : t.publicReferenceTitle}
+              </strong>
+              <p>
+                {isLinkedConversation ? t.linkedReferenceDetail : t.publicReferenceDetail}
+              </p>
+            </div>
+          </div>
+
+          <p className="order-process-notice">
+            <span aria-hidden="true">✓</span>
+            {t.orderNotice}
+          </p>
+        </div>
+
+        <aside className="delivery-tariffs" aria-labelledby="delivery-tariffs-title">
+          <div className="delivery-tariffs-heading">
+            <span className="delivery-icon" aria-hidden="true">🚚</span>
+            <div>
+              <p className="eyebrow">{t.deliveryEyebrow}</p>
+              <h2 id="delivery-tariffs-title">{t.deliveryTitle}</h2>
+            </div>
+          </div>
+
+          <label className="wilaya-select">
+            <span>{t.deliverySelect}</span>
+            <select
+              value={selectedWilaya}
+              onChange={(event) => setSelectedWilaya(event.target.value)}
+            >
+              <option value="">{t.deliverySelect}…</option>
+              {WILAYAS_58.map((wilaya) => {
+                const name = wilaya.slice(3);
+                return (
+                  <option key={wilaya} value={name}>
+                    {wilaya}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+
+          {selectedTariffs ? (
+            <div className="delivery-price-grid" aria-live="polite">
+              <div>
+                <span aria-hidden="true">⌂</span>
+                <small>{t.homeDelivery}</small>
+                <strong dir="ltr">{selectedTariffs.home.toLocaleString("fr-FR")} DA</strong>
+              </div>
+              <div>
+                <span aria-hidden="true">▣</span>
+                <small>{t.stopDeskDelivery}</small>
+                <strong dir="ltr">{selectedTariffs.stopDesk.toLocaleString("fr-FR")} DA</strong>
+              </div>
+            </div>
+          ) : (
+            <p className="delivery-prompt">{t.deliveryPrompt}</p>
+          )}
+
+          <p className="delivery-notice">{t.deliveryNotice}</p>
+        </aside>
+      </section>
+
       <section className="hero">
         <div className="hero-copy">
           <p className="eyebrow">{t.eyebrow}</p>
@@ -476,45 +581,6 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
             </form>
           )}
         </div>
-      </section>
-
-      <section className="order-process" aria-labelledby="order-process-title">
-        <div className="order-process-heading">
-          <p className="eyebrow">{t.orderEyebrow}</p>
-          <h2 id="order-process-title">{t.orderTitle}</h2>
-          <p>{t.orderIntro}</p>
-        </div>
-
-        <ol className="order-process-list">
-          {t.orderSteps.map((step, index) => (
-            <li key={step.title}>
-              <span className="order-step-number" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <h3>{step.title}</h3>
-                <p>{step.detail}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        <div className="order-reference-note">
-          <span aria-hidden="true">{isLinkedConversation ? "✓" : "↗"}</span>
-          <div>
-            <strong>
-              {isLinkedConversation ? t.linkedReferenceTitle : t.publicReferenceTitle}
-            </strong>
-            <p>
-              {isLinkedConversation ? t.linkedReferenceDetail : t.publicReferenceDetail}
-            </p>
-          </div>
-        </div>
-
-        <p className="order-process-notice">
-          <span aria-hidden="true">✓</span>
-          {t.orderNotice}
-        </p>
       </section>
 
       <footer className="site-footer">
