@@ -230,7 +230,7 @@ function getConversationReference(pathname) {
 }
 
 function RequestForm({ conversationReference = "", invalidConversationLink = false }) {
-  const [locale, setLocale] = useState("fr");
+  const [locale, setLocale] = useState("ar");
   const [products, setProducts] = useState([{ ...EMPTY_PRODUCT }]);
   const [website, setWebsite] = useState("");
   const [status, setStatus] = useState("idle");
