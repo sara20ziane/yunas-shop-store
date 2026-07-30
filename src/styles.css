@@ -2093,6 +2093,12 @@ textarea:focus,
   color: #fff;
 }
 
+.crop-capture-button {
+  border: 1px solid #c8a58f;
+  background: #fff;
+  color: var(--cacao);
+}
+
 .visual-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -2102,6 +2108,187 @@ textarea:focus,
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
+}
+
+.crop-editor-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  overflow-y: auto;
+  place-items: center;
+  padding: 20px;
+  background: rgba(36, 24, 29, 0.76);
+  backdrop-filter: blur(5px);
+}
+
+.crop-editor {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 22px;
+  padding: 20px;
+  background: #fffdfa;
+  box-shadow: 0 24px 70px rgba(25, 15, 19, 0.32);
+}
+
+.crop-editor header,
+.crop-editor footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.crop-editor header span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.crop-editor header h2 {
+  margin: 3px 0 0;
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 4vw, 30px);
+}
+
+.crop-editor header > button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--plum);
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.crop-format-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 18px 0 12px;
+  border-radius: 12px;
+  padding: 4px;
+  background: #f1e9e2;
+}
+
+.crop-format-options button {
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.crop-format-options button.active {
+  background: #fff;
+  box-shadow: 0 2px 9px rgba(58, 42, 45, 0.12);
+  color: var(--plum);
+}
+
+.crop-preview {
+  display: grid;
+  min-height: 260px;
+  max-height: 52vh;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 16px;
+  background:
+    linear-gradient(45deg, #e6ddd7 25%, transparent 25%),
+    linear-gradient(-45deg, #e6ddd7 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e6ddd7 75%),
+    linear-gradient(-45deg, transparent 75%, #e6ddd7 75%),
+    #f4eee8;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-size: 20px 20px;
+  color: var(--muted);
+}
+
+.crop-preview canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 52vh;
+  width: auto;
+  height: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.crop-preview canvas:active {
+  cursor: grabbing;
+}
+
+.crop-hint {
+  margin: 9px 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+.crop-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.crop-controls label {
+  display: grid;
+  gap: 7px;
+}
+
+.crop-controls span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.crop-controls input {
+  width: 100%;
+  accent-color: var(--plum);
+}
+
+.crop-editor footer {
+  justify-content: flex-end;
+  border-top: 1px solid #eaded5;
+  padding-top: 16px;
+}
+
+.crop-editor footer button {
+  border-radius: 11px;
+  padding: 11px 15px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.crop-cancel-button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+}
+
+.crop-apply-button {
+  border: 1px solid var(--plum);
+  background: var(--plum);
+  color: #fff;
+}
+
+.crop-apply-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
 }
 
 .quote-summary {
@@ -2413,6 +2600,37 @@ textarea:focus,
   .quote-item {
     grid-template-columns: 1fr;
     padding: 12px;
+  }
+
+  .crop-editor-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .crop-editor {
+    width: 100%;
+    max-height: 96vh;
+    border-radius: 22px 22px 0 0;
+    padding: 16px;
+  }
+
+  .crop-preview {
+    min-height: 220px;
+    max-height: 48vh;
+  }
+
+  .crop-preview canvas {
+    max-height: 48vh;
+  }
+
+  .crop-controls {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .crop-editor footer {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
   }
 
   .quote-capture,
