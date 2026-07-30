@@ -587,7 +587,7 @@ function RequestCard({ item, onError }) {
     }
   }
 
-  async function shareVisual(index) {
+  async function downloadPricedVisual(index) {
     const capture = captures[index]?.blob;
     const price = quoteItems[index]?.priceDa;
     if (!capture || !Number(price)) {
@@ -598,20 +598,10 @@ function RequestCard({ item, onError }) {
     try {
       const visual = await createPricedVisual(capture, quoteItems[index]);
       const filename = `${item.reference}-article-${index + 1}.jpg`;
-      const file = new File([visual], filename, { type: "image/jpeg" });
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `Article ${index + 1} · ${item.reference}`,
-        });
-      } else {
-        downloadVisual(visual, filename);
-      }
+      downloadVisual(visual, filename);
       onError("");
-    } catch (error) {
-      if (error?.name !== "AbortError") {
-        onError("Le visuel n’a pas pu être créé. Réessayez.");
-      }
+    } catch {
+      onError("Le visuel n’a pas pu être téléchargé. Réessayez.");
     } finally {
       setVisualInProgress("");
     }
@@ -888,9 +878,11 @@ function RequestCard({ item, onError }) {
                         className="visual-button"
                         type="button"
                         disabled={!Number(quoteItem.priceDa) || visualInProgress === String(index)}
-                        onClick={() => shareVisual(index)}
+                        onClick={() => downloadPricedVisual(index)}
                       >
-                        {visualInProgress === String(index) ? "Création…" : "Partager le visuel"}
+                        {visualInProgress === String(index)
+                          ? "Téléchargement…"
+                          : "Télécharger le visuel"}
                       </button>
                       <button
                         className="remove-capture-button"
