@@ -217,6 +217,74 @@ async function compressCapture(file) {
   });
 }
 
+const CROP_FORMATS = {
+  original: { label: "Original", aspect: null },
+  square: { label: "Carré 1:1", aspect: 1 },
+  portrait: { label: "Portrait 4:5", aspect: 4 / 5 },
+};
+
+function clamp(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
+function getCropRectangle(image, settings) {
+  const aspect = CROP_FORMATS[settings.format]?.aspect || image.width / image.height;
+  const imageAspect = image.width / image.height;
+  let baseWidth;
+  let baseHeight;
+
+  if (imageAspect > aspect) {
+    baseHeight = image.height;
+    baseWidth = baseHeight * aspect;
+  } else {
+    baseWidth = image.width;
+    baseHeight = baseWidth / aspect;
+  }
+
+  const zoom = clamp(Number(settings.zoom) || 1, 1, 3);
+  const width = baseWidth / zoom;
+  const height = baseHeight / zoom;
+  const maximumLeft = Math.max(0, image.width - width);
+  const maximumTop = Math.max(0, image.height - height);
+  const left = maximumLeft * (clamp(settings.positionX, 0, 100) / 100);
+  const top = maximumTop * (clamp(settings.positionY, 0, 100) / 100);
+
+  return { left, top, width, height, maximumLeft, maximumTop };
+}
+
+function drawCroppedImage(canvas, image, settings, maximumSide) {
+  const crop = getCropRectangle(image, settings);
+  const scale = Math.min(1, maximumSide / Math.max(crop.width, crop.height));
+  canvas.width = Math.max(1, Math.round(crop.width * scale));
+  canvas.height = Math.max(1, Math.round(crop.height * scale));
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(
+    image,
+    crop.left,
+    crop.top,
+    crop.width,
+    crop.height,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
+  return crop;
+}
+
+function createCroppedCapture(image, settings) {
+  const canvas = document.createElement("canvas");
+  drawCroppedImage(canvas, image, settings, 1400);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("Image crop failed"))),
+      "image/jpeg",
+      0.9,
+    );
+  });
+}
+
 async function createPricedVisual(capture, quoteItem) {
   const image = await loadImage(capture);
   const canvas = document.createElement("canvas");
@@ -367,6 +435,230 @@ function createConversationReference() {
   return `YS-META-${random}`;
 }
 
+function CropEditor({ capture, articleNumber, onCancel, onApply }) {
+  const canvasRef = useRef(null);
+  const dragState = useRef(null);
+  const [image, setImage] = useState(null);
+  const [format, setFormat] = useState("original");
+  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 50, y: 50 });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    loadImage(capture).then((loadedImage) => {
+      if (active) setImage(loadedImage);
+    });
+    return () => {
+      active = false;
+    };
+  }, [capture]);
+
+  useEffect(() => {
+    if (!image || !canvasRef.current) return;
+    drawCroppedImage(
+      canvasRef.current,
+      image,
+      {
+        format,
+        zoom,
+        positionX: position.x,
+        positionY: position.y,
+      },
+      800,
+    );
+  }, [format, image, position.x, position.y, zoom]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function closeOnEscape(event) {
+      if (event.key === "Escape") onCancel();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onCancel]);
+
+  function changeFormat(nextFormat) {
+    setFormat(nextFormat);
+    setZoom(1);
+    setPosition({ x: 50, y: 50 });
+  }
+
+  function startDragging(event) {
+    if (!image || !canvasRef.current) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const bounds = canvasRef.current.getBoundingClientRect();
+    dragState.current = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      position,
+      crop: getCropRectangle(image, {
+        format,
+        zoom,
+        positionX: position.x,
+        positionY: position.y,
+      }),
+      displayWidth: bounds.width,
+      displayHeight: bounds.height,
+    };
+  }
+
+  function dragImage(event) {
+    const start = dragState.current;
+    if (!start) return;
+    const deltaX = event.clientX - start.clientX;
+    const deltaY = event.clientY - start.clientY;
+    const nextX = start.crop.maximumLeft
+      ? start.position.x -
+        ((deltaX * start.crop.width) / start.displayWidth / start.crop.maximumLeft) * 100
+      : 50;
+    const nextY = start.crop.maximumTop
+      ? start.position.y -
+        ((deltaY * start.crop.height) / start.displayHeight / start.crop.maximumTop) * 100
+      : 50;
+    setPosition({
+      x: clamp(nextX, 0, 100),
+      y: clamp(nextY, 0, 100),
+    });
+  }
+
+  function stopDragging(event) {
+    dragState.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  async function applyCrop() {
+    if (!image) return;
+    setSaving(true);
+    try {
+      const croppedCapture = await createCroppedCapture(image, {
+        format,
+        zoom,
+        positionX: position.x,
+        positionY: position.y,
+      });
+      await onApply(croppedCapture);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="crop-editor-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onCancel();
+      }}
+    >
+      <section
+        className="crop-editor"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`crop-title-${articleNumber}`}
+      >
+        <header>
+          <div>
+            <span>Article {articleNumber}</span>
+            <h2 id={`crop-title-${articleNumber}`}>Recadrer la photo</h2>
+          </div>
+          <button type="button" onClick={onCancel} aria-label="Fermer le recadrage">
+            ×
+          </button>
+        </header>
+
+        <div className="crop-format-options" aria-label="Format du visuel">
+          {Object.entries(CROP_FORMATS).map(([value, option]) => (
+            <button
+              type="button"
+              className={format === value ? "active" : ""}
+              aria-pressed={format === value}
+              onClick={() => changeFormat(value)}
+              key={value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="crop-preview">
+          {image ? (
+            <canvas
+              ref={canvasRef}
+              onPointerDown={startDragging}
+              onPointerMove={dragImage}
+              onPointerUp={stopDragging}
+              onPointerCancel={stopDragging}
+              aria-label="Aperçu du recadrage. Faites glisser la photo pour la repositionner."
+            />
+          ) : (
+            <span>Chargement de la photo…</span>
+          )}
+        </div>
+        <p className="crop-hint">Fais glisser la photo ou utilise les réglages ci-dessous.</p>
+
+        <div className="crop-controls">
+          <label>
+            <span>Zoom</span>
+            <input
+              type="range"
+              min="1"
+              max="3"
+              step="0.01"
+              value={zoom}
+              onChange={(event) => setZoom(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            <span>Horizontal</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={position.x}
+              onChange={(event) =>
+                setPosition((current) => ({ ...current, x: Number(event.target.value) }))
+              }
+            />
+          </label>
+          <label>
+            <span>Vertical</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={position.y}
+              onChange={(event) =>
+                setPosition((current) => ({ ...current, y: Number(event.target.value) }))
+              }
+            />
+          </label>
+        </div>
+
+        <footer>
+          <button className="crop-cancel-button" type="button" onClick={onCancel}>
+            Annuler
+          </button>
+          <button
+            className="crop-apply-button"
+            type="button"
+            disabled={!image || saving}
+            onClick={applyCrop}
+          >
+            {saving ? "Enregistrement…" : "Valider le recadrage"}
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -455,6 +747,7 @@ function RequestCard({ item, onError }) {
   const [copied, setCopied] = useState(false);
   const [messageCopied, setMessageCopied] = useState(false);
   const [visualInProgress, setVisualInProgress] = useState("");
+  const [cropIndex, setCropIndex] = useState(null);
   const status = normalizeStatus(item.status);
   const responseChannel = getResponseChannel(item);
   const responseContact = getResponseContact(item);
@@ -550,6 +843,18 @@ function RequestCard({ item, onError }) {
     changeQuoteItem(index, "priceDa", String(roundToNearestHundred(simulation.finalPrice)));
   }
 
+  async function saveCapture(index, blob) {
+    const key = getCaptureKey(item.id, index, quoteItems[index]);
+    await storeImage(key, blob);
+    setCaptures((current) => {
+      if (current[index]?.previewUrl) URL.revokeObjectURL(current[index].previewUrl);
+      return {
+        ...current,
+        [index]: { blob, previewUrl: URL.createObjectURL(blob) },
+      };
+    });
+  }
+
   async function addCapture(index, file) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
@@ -558,24 +863,28 @@ function RequestCard({ item, onError }) {
     }
     try {
       const blob = await compressCapture(file);
-      const key = getCaptureKey(item.id, index, quoteItems[index]);
-      await storeImage(key, blob);
-      setCaptures((current) => {
-        if (current[index]?.previewUrl) URL.revokeObjectURL(current[index].previewUrl);
-        return {
-          ...current,
-          [index]: { blob, previewUrl: URL.createObjectURL(blob) },
-        };
-      });
+      await saveCapture(index, blob);
       onError("");
     } catch {
       onError("La capture n’a pas pu être ajoutée. Réessayez avec une autre image.");
     }
   }
 
+  async function applyCroppedCapture(index, blob) {
+    try {
+      await saveCapture(index, blob);
+      setCropIndex(null);
+      onError("");
+    } catch {
+      onError("Le recadrage n’a pas pu être enregistré. Réessayez.");
+      throw new Error("Crop storage failed");
+    }
+  }
+
   async function deleteCapture(index) {
     try {
       await removeStoredImage(getCaptureKey(item.id, index, quoteItems[index]));
+      if (cropIndex === index) setCropIndex(null);
       setCaptures((current) => {
         const next = { ...current };
         if (next[index]?.previewUrl) URL.revokeObjectURL(next[index].previewUrl);
@@ -875,6 +1184,13 @@ function RequestCard({ item, onError }) {
                   {captures[index] ? (
                     <>
                       <button
+                        className="crop-capture-button"
+                        type="button"
+                        onClick={() => setCropIndex(index)}
+                      >
+                        Recadrer la photo
+                      </button>
+                      <button
                         className="visual-button"
                         type="button"
                         disabled={!Number(quoteItem.priceDa) || visualInProgress === String(index)}
@@ -899,6 +1215,15 @@ function RequestCard({ item, onError }) {
           );
         })}
       </div>
+
+      {cropIndex !== null && captures[cropIndex] ? (
+        <CropEditor
+          capture={captures[cropIndex].blob}
+          articleNumber={cropIndex + 1}
+          onCancel={() => setCropIndex(null)}
+          onApply={(blob) => applyCroppedCapture(cropIndex, blob)}
+        />
+      ) : null}
 
       <div className="quote-summary">
         <div>
