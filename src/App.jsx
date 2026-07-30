@@ -30,7 +30,10 @@ const copy = {
     identifierPlaceholder: "Ex. 12345678 ou sw220...",
     addProduct: "Ajouter un autre article",
     removeProduct: "Retirer",
-    submit: "Envoyer ma demande",
+    formEyebrow: "Devis gratuit, sans engagement",
+    formTitle: "Obtenir le prix de mes articles",
+    formIntro: "Collez le lien ou indiquez la référence du premier article.",
+    submit: "Obtenir le prix de mes articles",
     sending: "Envoi en cours…",
     trust: "Prix et disponibilité vérifiés avant notre réponse.",
     privacy: "Aucun pseudo ni numéro à saisir.",
@@ -122,7 +125,10 @@ const copy = {
     identifierPlaceholder: "مثال: 12345678 أو sw220...",
     addProduct: "إضافة منتج آخر",
     removeProduct: "حذف",
-    submit: "إرسال الطلب",
+    formEyebrow: "حساب السعر مجاناً وبدون التزام",
+    formTitle: "احصلي على سعر منتجاتك",
+    formIntro: "الصقي رابط المنتج الأول أو اكتبي المرجع الخاص به.",
+    submit: "اضغطي هنا باش تحصلي على السعر",
     sending: "جارٍ الإرسال…",
     trust: "نتحقق من السعر والتوفر قبل الرد عليك.",
     privacy: "لا حاجة لكتابة اسم الحساب أو رقم الهاتف.",
@@ -370,94 +376,6 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
         </div>
       </header>
 
-      <section className="order-overview" aria-labelledby="order-process-title">
-        <div className="order-process">
-          <div className="order-process-heading">
-            <p className="eyebrow">{t.orderEyebrow}</p>
-            <h2 id="order-process-title">{t.orderTitle}</h2>
-            <p>{t.orderIntro}</p>
-          </div>
-
-          <ol className="order-process-list">
-            {t.orderSteps.map((step, index) => (
-              <li key={step.title}>
-                <span className="order-step-number" aria-hidden="true">
-                  {index + 1}
-                </span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.detail}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-
-          <div className="order-reference-note">
-            <span aria-hidden="true">{isLinkedConversation ? "✓" : "↗"}</span>
-            <div>
-              <strong>
-                {isLinkedConversation ? t.linkedReferenceTitle : t.publicReferenceTitle}
-              </strong>
-              <p>
-                {isLinkedConversation ? t.linkedReferenceDetail : t.publicReferenceDetail}
-              </p>
-            </div>
-          </div>
-
-          <p className="order-process-notice">
-            <span aria-hidden="true">✓</span>
-            {t.orderNotice}
-          </p>
-        </div>
-
-        <aside className="delivery-tariffs" aria-labelledby="delivery-tariffs-title">
-          <div className="delivery-tariffs-heading">
-            <span className="delivery-icon" aria-hidden="true">🚚</span>
-            <div>
-              <p className="eyebrow">{t.deliveryEyebrow}</p>
-              <h2 id="delivery-tariffs-title">{t.deliveryTitle}</h2>
-            </div>
-          </div>
-
-          <label className="wilaya-select">
-            <span>{t.deliverySelect}</span>
-            <select
-              value={selectedWilaya}
-              onChange={(event) => setSelectedWilaya(event.target.value)}
-            >
-              <option value="">{t.deliverySelect}…</option>
-              {WILAYAS_58.map((wilaya) => {
-                const name = wilaya.slice(3);
-                return (
-                  <option key={wilaya} value={name}>
-                    {wilaya}
-                  </option>
-                );
-              })}
-            </select>
-          </label>
-
-          {selectedTariffs ? (
-            <div className="delivery-price-grid" aria-live="polite">
-              <div>
-                <span aria-hidden="true">⌂</span>
-                <small>{t.homeDelivery}</small>
-                <strong dir="ltr">{selectedTariffs.home.toLocaleString("fr-FR")} DA</strong>
-              </div>
-              <div>
-                <span aria-hidden="true">▣</span>
-                <small>{t.stopDeskDelivery}</small>
-                <strong dir="ltr">{selectedTariffs.stopDesk.toLocaleString("fr-FR")} DA</strong>
-              </div>
-            </div>
-          ) : (
-            <p className="delivery-prompt">{t.deliveryPrompt}</p>
-          )}
-
-          <p className="delivery-notice">{t.deliveryNotice}</p>
-        </aside>
-      </section>
-
       <section className="hero">
         <div className="hero-copy">
           <p className="eyebrow">{t.eyebrow}</p>
@@ -497,6 +415,11 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
             </div>
           ) : (
             <form onSubmit={submit} noValidate>
+              <div className="form-intro">
+                <p>{t.formEyebrow}</p>
+                <h2>{t.formTitle}</h2>
+                <span>{t.formIntro}</span>
+              </div>
               {isLinkedConversation ? (
                 <div className="linked-conversation-notice">
                   <span aria-hidden="true">✓</span>
@@ -581,6 +504,104 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
             </form>
           )}
         </div>
+      </section>
+
+      <section className="order-overview" aria-label={isArabic ? "معلومات الطلب" : "Informations de commande"}>
+        <details className="info-accordion order-process">
+          <summary>
+            <span className="accordion-icon" aria-hidden="true">1–5</span>
+            <span>
+              <small>{t.orderEyebrow}</small>
+              <strong>{t.orderTitle}</strong>
+              <em>{t.orderIntro}</em>
+            </span>
+            <b aria-hidden="true">＋</b>
+          </summary>
+
+          <div className="accordion-content">
+            <ol className="order-process-list">
+              {t.orderSteps.map((step, index) => (
+                <li key={step.title}>
+                  <span className="order-step-number" aria-hidden="true">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3>{step.title}</h3>
+                    <p>{step.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <div className="order-reference-note">
+              <span aria-hidden="true">{isLinkedConversation ? "✓" : "↗"}</span>
+              <div>
+                <strong>
+                  {isLinkedConversation ? t.linkedReferenceTitle : t.publicReferenceTitle}
+                </strong>
+                <p>
+                  {isLinkedConversation ? t.linkedReferenceDetail : t.publicReferenceDetail}
+                </p>
+              </div>
+            </div>
+
+            <p className="order-process-notice">
+              <span aria-hidden="true">✓</span>
+              {t.orderNotice}
+            </p>
+          </div>
+        </details>
+
+        <details className="info-accordion delivery-tariffs">
+          <summary>
+            <span className="accordion-icon" aria-hidden="true">🚚</span>
+            <span>
+              <small>{t.deliveryEyebrow}</small>
+              <strong>{t.deliveryTitle}</strong>
+              <em>{t.deliveryPrompt}</em>
+            </span>
+            <b aria-hidden="true">＋</b>
+          </summary>
+
+          <div className="accordion-content delivery-content">
+            <label className="wilaya-select">
+              <span>{t.deliverySelect}</span>
+              <select
+                value={selectedWilaya}
+                onChange={(event) => setSelectedWilaya(event.target.value)}
+              >
+                <option value="">{t.deliverySelect}…</option>
+                {WILAYAS_58.map((wilaya) => {
+                  const name = wilaya.slice(3);
+                  return (
+                    <option key={wilaya} value={name}>
+                      {wilaya}
+                    </option>
+                  );
+                })}
+              </select>
+            </label>
+
+            {selectedTariffs ? (
+              <div className="delivery-price-grid" aria-live="polite">
+                <div>
+                  <span aria-hidden="true">⌂</span>
+                  <small>{t.homeDelivery}</small>
+                  <strong dir="ltr">{selectedTariffs.home.toLocaleString("fr-FR")} DA</strong>
+                </div>
+                <div>
+                  <span aria-hidden="true">▣</span>
+                  <small>{t.stopDeskDelivery}</small>
+                  <strong dir="ltr">{selectedTariffs.stopDesk.toLocaleString("fr-FR")} DA</strong>
+                </div>
+              </div>
+            ) : (
+              <p className="delivery-prompt">{t.deliveryPrompt}</p>
+            )}
+
+            <p className="delivery-notice">{t.deliveryNotice}</p>
+          </div>
+        </details>
       </section>
 
       <footer className="site-footer">
