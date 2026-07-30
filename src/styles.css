@@ -243,6 +243,39 @@ button {
   backdrop-filter: blur(14px);
 }
 
+.form-intro {
+  margin-bottom: 24px;
+  border-bottom: 1px solid #eaded5;
+  padding-bottom: 20px;
+}
+
+.form-intro p {
+  margin: 0 0 7px;
+  color: #9b6875;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.form-intro h2 {
+  margin: 0;
+  color: var(--plum-deep);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(27px, 2.6vw, 36px);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.form-intro span {
+  display: block;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .field-heading {
   display: flex;
   align-items: baseline;
@@ -761,10 +794,12 @@ textarea:focus,
 .is-arabic .brand,
 .is-arabic .hero h1,
 .is-arabic .field-heading label,
+.is-arabic .form-intro h2,
 .is-arabic .success-panel h2,
 .is-arabic .order-process h2,
 .is-arabic .order-process h3,
-.is-arabic .delivery-tariffs h2 {
+.is-arabic .delivery-tariffs h2,
+.is-arabic .info-accordion summary strong {
   font-family: Tahoma, Arial, sans-serif;
 }
 
@@ -786,15 +821,17 @@ textarea:focus,
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.34fr);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.7fr);
   max-width: 1380px;
   align-items: stretch;
   gap: 16px;
-  margin: 30px auto 8px;
+  margin: 10px auto 42px;
 }
 
 .order-process,
 .delivery-tariffs {
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid rgba(203, 178, 157, 0.72);
   border-radius: 26px;
   background:
@@ -804,8 +841,83 @@ textarea:focus,
   backdrop-filter: blur(12px);
 }
 
-.order-process {
-  padding: 24px;
+.info-accordion > summary {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.info-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(207, 168, 174, 0.24);
+  color: var(--plum);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.info-accordion > summary > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+}
+
+.info-accordion summary small {
+  color: #9b6875;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.info-accordion summary strong {
+  color: var(--plum-deep);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.info-accordion summary em {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-accordion > summary > b {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--plum);
+  color: #fff;
+  font-size: 15px;
+  transition: transform 180ms ease;
+}
+
+.info-accordion[open] > summary > b {
+  transform: rotate(45deg);
+}
+
+.accordion-content {
+  border-top: 1px solid #eaded5;
+  padding: 0 22px 22px;
 }
 
 .order-process-heading {
@@ -934,13 +1046,6 @@ textarea:focus,
   font-weight: 900;
 }
 
-.delivery-tariffs {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  padding: 24px;
-}
-
 .delivery-tariffs-heading {
   display: flex;
   align-items: flex-start;
@@ -974,7 +1079,7 @@ textarea:focus,
 .wilaya-select {
   display: grid;
   gap: 7px;
-  margin-top: 19px;
+  margin-top: 18px;
 }
 
 .wilaya-select > span {
@@ -1054,7 +1159,7 @@ textarea:focus,
 }
 
 .delivery-notice {
-  margin: auto 0 0;
+  margin: 0;
   padding-top: 11px;
   color: var(--muted);
   font-size: 9px;
@@ -2041,41 +2146,6 @@ textarea:focus,
     grid-template-columns: 1fr;
   }
 
-  .delivery-tariffs {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
-    align-items: center;
-    gap: 14px 22px;
-  }
-
-  .delivery-tariffs-heading,
-  .delivery-notice {
-    grid-column: 1;
-  }
-
-  .wilaya-select,
-  .delivery-price-grid,
-  .delivery-prompt {
-    grid-column: 2;
-  }
-
-  .wilaya-select {
-    grid-row: 1;
-    margin-top: 0;
-  }
-
-  .delivery-price-grid,
-  .delivery-prompt {
-    grid-row: 2 / span 2;
-    margin-top: 0;
-  }
-
-  .delivery-notice {
-    margin-top: 0;
-    padding-top: 0;
-    text-align: start;
-  }
-
   .hero {
     grid-template-columns: 1fr;
     gap: 42px;
@@ -2086,6 +2156,7 @@ textarea:focus,
   .form-card,
   .is-arabic .form-card {
     max-width: 760px;
+    order: -1;
     justify-self: center;
   }
 
@@ -2153,20 +2224,7 @@ textarea:focus,
 
   .order-process {
     margin: 0;
-    padding: 22px 16px;
-  }
-
-  .order-process-heading {
-    display: grid;
-    gap: 7px;
-  }
-
-  .order-process h2 {
-    font-size: 30px;
-  }
-
-  .order-process-heading > p:last-child {
-    font-size: 11px;
+    padding: 0;
   }
 
   .order-process-list {
@@ -2196,12 +2254,7 @@ textarea:focus,
   }
 
   .delivery-tariffs {
-    display: flex;
-    padding: 20px 16px;
-  }
-
-  .delivery-tariffs h2 {
-    font-size: 23px;
+    padding: 0;
   }
 
   .wilaya-select {
@@ -2220,8 +2273,45 @@ textarea:focus,
   }
 
   .hero {
-    gap: 30px;
-    padding-top: 38px;
+    gap: 32px;
+    padding-top: 24px;
+  }
+
+  .form-card {
+    order: -1;
+  }
+
+  .form-intro {
+    margin-bottom: 20px;
+    padding-bottom: 17px;
+  }
+
+  .form-intro h2 {
+    font-size: 29px;
+  }
+
+  .info-accordion > summary {
+    grid-template-columns: 40px minmax(0, 1fr) 26px;
+    gap: 11px;
+    padding: 16px;
+  }
+
+  .accordion-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .info-accordion summary strong {
+    font-size: 19px;
+  }
+
+  .info-accordion summary em {
+    font-size: 10px;
+  }
+
+  .accordion-content {
+    padding: 0 16px 16px;
   }
 
   .hero h1 {
