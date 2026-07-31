@@ -36,7 +36,8 @@ const copy = {
     submit: "Obtenir le prix de mes articles",
     sending: "Envoi en cours…",
     trust: "Prix et disponibilité vérifiés avant notre réponse.",
-    privacy: "Aucun pseudo ni numéro à saisir.",
+    privacy: "Votre contact sert uniquement à retrouver votre conversation.",
+    linkedPrivacy: "Aucun pseudo ni numéro à saisir.",
     linkedFormNotice:
       "Cette demande est déjà liée à notre conversation. Ajoutez seulement vos articles.",
     invalidProduct: "Ajoutez un lien ou un ID / SKU / référence pour chaque article.",
@@ -49,10 +50,36 @@ const copy = {
     linkedSuccess:
       "Votre demande est automatiquement liée à notre conversation. Vous n’avez rien d’autre à envoyer.",
     publicSuccess:
-      "Copiez cette référence et envoyez-la dans votre conversation avec Yuna’s Shop pour que nous puissions vous retrouver.",
+      "Dernière étape : envoyez maintenant ce numéro dans votre conversation avec Yuna’s Shop.",
     reference: "Votre référence",
     copyReference: "Copier la référence",
     copiedReference: "Référence copiée ✓",
+    sendReference: "Envoyer le numéro dans la messagerie",
+    sendingReference: "Ouverture de la messagerie…",
+    referenceSent: "Vérifiez que le message a bien été envoyé ✓",
+    publicContactTitle: "Pour retrouver votre conversation",
+    publicContactIntro:
+      "Choisissez où vous nous avez écrit, puis indiquez exactement le nom ou le numéro affiché dans la conversation.",
+    contactChannel: "Où nous avez-vous écrit ?",
+    contactLabels: {
+      instagram: "Instagram",
+      messenger: "Messenger",
+      whatsapp: "WhatsApp",
+    },
+    contactFieldLabels: {
+      instagram: "Votre pseudo Instagram",
+      messenger: "Votre nom sur Messenger",
+      whatsapp: "Votre numéro WhatsApp",
+    },
+    contactPlaceholders: {
+      instagram: "Ex. @votre.pseudo",
+      messenger: "Le nom affiché dans la conversation",
+      whatsapp: "Ex. 0555 00 00 00",
+    },
+    invalidContact: "Indiquez le même nom, pseudo ou numéro que dans votre conversation.",
+    invalidWhatsapp: "Vérifiez le numéro WhatsApp algérien.",
+    shareMessage: (reference) =>
+      `Bonjour, j’ai envoyé mes articles sur le site Yuna’s Shop. Ma référence est ${reference}.`,
     closePage: "Vous pouvez maintenant fermer cette page.",
     another: "Envoyer une autre demande",
     orderEyebrow: "Procédure de commande",
@@ -90,7 +117,7 @@ const copy = {
       "Le lien reçu dans notre conversation rattache automatiquement cette demande : aucun pseudo ni numéro à saisir.",
     publicReferenceTitle: "Envoyez-nous votre référence",
     publicReferenceDetail:
-      "Depuis ce lien public, copiez la référence affichée après l’envoi et transmettez-la dans votre conversation avec Yuna’s Shop.",
+      "Depuis ce lien public, nous enregistrons votre contact et le site vous aide à transmettre la référence dans la bonne conversation.",
     orderNotice:
       "Le prix et la disponibilité sont toujours confirmés avant le paiement de l’acompte.",
     deliveryEyebrow: "Tarifs de livraison",
@@ -131,7 +158,8 @@ const copy = {
     submit: "اضغطي هنا باش تحصلي على السعر",
     sending: "جارٍ الإرسال…",
     trust: "نتحقق من السعر والتوفر قبل الرد عليك.",
-    privacy: "لا حاجة لكتابة اسم الحساب أو رقم الهاتف.",
+    privacy: "نستعمل الاسم أو الرقم فقط باش نلقاو محادثتك.",
+    linkedPrivacy: "لا حاجة لكتابة اسم الحساب أو رقم الهاتف.",
     linkedFormNotice:
       "هذا الطلب مرتبط مسبقاً بمحادثتنا. أضيفي المنتجات فقط.",
     invalidProduct: "أضيفي رابطاً أو ID / SKU / مرجعاً لكل منتج.",
@@ -144,10 +172,36 @@ const copy = {
     linkedSuccess:
       "تم ربط طلبك تلقائياً بمحادثتنا. لا تحتاجين إلى إرسال أي شيء آخر.",
     publicSuccess:
-      "انسخي رقم الطلب وأرسليه في محادثتك مع Yuna’s Shop حتى نتمكن من العثور على طلبك.",
+      "بقات خطوة أخيرة: ابعثي الآن رقم الطلب في محادثتك مع Yuna’s Shop.",
     reference: "رقم طلبك",
     copyReference: "نسخ رقم الطلب",
     copiedReference: "تم نسخ الرقم ✓",
+    sendReference: "ابعثي رقم الطلب في المحادثة",
+    sendingReference: "جاري فتح المراسلة…",
+    referenceSent: "تأكدي بلي الرسالة تبعثت ✓",
+    publicContactTitle: "باش نلقاو محادثتك بسهولة",
+    publicContactIntro:
+      "اختاري وين بعثتيلنا، واكتبي نفس الاسم أو الرقم لي ظاهر في المحادثة.",
+    contactChannel: "وين بعثتيلنا؟",
+    contactLabels: {
+      instagram: "Instagram",
+      messenger: "Messenger",
+      whatsapp: "WhatsApp",
+    },
+    contactFieldLabels: {
+      instagram: "اسم حسابك في Instagram",
+      messenger: "اسمك في Messenger",
+      whatsapp: "رقم WhatsApp",
+    },
+    contactPlaceholders: {
+      instagram: "مثال: @votre.pseudo",
+      messenger: "نفس الاسم لي ظاهر في المحادثة",
+      whatsapp: "مثال: 0555 00 00 00",
+    },
+    invalidContact: "اكتبي نفس الاسم أو الرقم لي ظاهر في محادثتك.",
+    invalidWhatsapp: "تأكدي من رقم WhatsApp الجزائري.",
+    shareMessage: (reference) =>
+      `السلام عليكم، بعثت المنتجات في موقع Yuna’s Shop. رقم طلبي هو ${reference}.`,
     closePage: "يمكنك الآن إغلاق هذه الصفحة.",
     another: "إرسال طلب آخر",
     orderEyebrow: "طريقة الطلب",
@@ -183,7 +237,7 @@ const copy = {
       "الرابط المرسل في محادثتنا يربط طلبك تلقائياً، بدون كتابة اسم الحساب أو رقم الهاتف.",
     publicReferenceTitle: "أرسلي لنا رقم الطلب",
     publicReferenceDetail:
-      "عند استعمال الرابط العام، انسخي رقم الطلب الذي يظهر بعد الإرسال وابعثيه لنا في محادثتك مع Yuna’s Shop.",
+      "في الرابط العام نسجلو اسمك أو رقمك، والموقع يساعدك تبعثي رقم الطلب في المحادثة الصحيحة.",
     orderNotice:
       "نؤكد لك دائماً السعر والتوفر قبل دفع التسبيق.",
     deliveryEyebrow: "أسعار التوصيل",
@@ -229,6 +283,13 @@ function getConversationReference(pathname) {
   }
 }
 
+function normalizeWhatsapp(value) {
+  const digits = value.replace(/\D/g, "");
+  if (/^0[567]\d{8}$/.test(digits)) return `213${digits.slice(1)}`;
+  if (/^213[567]\d{8}$/.test(digits)) return digits;
+  return "";
+}
+
 function RequestForm({ conversationReference = "", invalidConversationLink = false }) {
   const [locale, setLocale] = useState("ar");
   const [products, setProducts] = useState([{ ...EMPTY_PRODUCT }]);
@@ -237,6 +298,9 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
   const [fieldError, setFieldError] = useState("");
   const [reference, setReference] = useState("");
   const [referenceCopied, setReferenceCopied] = useState(false);
+  const [handoffStatus, setHandoffStatus] = useState("idle");
+  const [contactChannel, setContactChannel] = useState("instagram");
+  const [contact, setContact] = useState("");
   const [selectedWilaya, setSelectedWilaya] = useState("");
   const t = copy[locale];
   const isArabic = locale === "ar";
@@ -290,6 +354,18 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
       setFieldError(t.tooManyProducts);
       return;
     }
+    const cleanedContact = contact.trim();
+    const normalizedWhatsapp = contactChannel === "whatsapp"
+      ? normalizeWhatsapp(cleanedContact)
+      : "";
+    if (!isLinkedConversation && !cleanedContact) {
+      setFieldError(t.invalidContact);
+      return;
+    }
+    if (!isLinkedConversation && contactChannel === "whatsapp" && !normalizedWhatsapp) {
+      setFieldError(t.invalidWhatsapp);
+      return;
+    }
     if (invalidConversationLink) {
       setFieldError(t.invalidConversationLink);
       return;
@@ -317,11 +393,15 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
           reference: nextReference,
           requestItems: cleanedProducts,
           links: productLinks,
-          responseChannel: "instagram",
+          responseChannel: isLinkedConversation ? "instagram" : contactChannel,
           responseContact: isLinkedConversation
             ? `meta:${nextReference}`
-            : `story:${nextReference}`,
-          whatsapp: "",
+            : contactChannel === "whatsapp"
+              ? normalizedWhatsapp
+              : cleanedContact,
+          whatsapp: !isLinkedConversation && contactChannel === "whatsapp"
+            ? normalizedWhatsapp
+            : "",
           locale,
           status: "new",
           createdAt: serverTimestamp(),
@@ -342,6 +422,7 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
     setReference("");
     setFieldError("");
     setReferenceCopied(false);
+    setHandoffStatus("idle");
     setStatus("idle");
   }
 
@@ -352,6 +433,42 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
     } catch {
       setFieldError(t.error);
     }
+  }
+
+  async function continueInMessaging() {
+    const message = t.shareMessage(reference);
+    setHandoffStatus("opening");
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: message });
+        setReferenceCopied(true);
+        setHandoffStatus("sent");
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          setHandoffStatus("idle");
+          return;
+        }
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(message);
+      setReferenceCopied(true);
+    } catch {
+      setFieldError(t.error);
+      setHandoffStatus("idle");
+      return;
+    }
+
+    const destination = contactChannel === "instagram"
+      ? "https://ig.me/m/yunas.shop"
+      : contactChannel === "messenger"
+        ? "https://m.me/yunas.shop"
+        : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.location.href = destination;
+    setHandoffStatus("sent");
   }
 
   return (
@@ -403,11 +520,26 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
                 <p className="success-close-note">{t.closePage}</p>
               ) : (
                 <>
-                  <button className="primary-button" type="button" onClick={copyReference}>
+                  <div className="required-next-step">
+                    <strong>{isArabic ? "لا تغلقي الصفحة قبل إرسال الرقم" : "Ne fermez pas avant d’envoyer le numéro"}</strong>
+                    <span>{isArabic ? "اضغطي على الزر واختاري محادثتك مع Yuna’s Shop" : "Appuyez sur le bouton et choisissez votre conversation avec Yuna’s Shop."}</span>
+                  </div>
+                  <button
+                    className="primary-button messaging-handoff-button"
+                    type="button"
+                    onClick={continueInMessaging}
+                    disabled={handoffStatus === "opening"}
+                  >
+                    {handoffStatus === "opening" ? t.sendingReference : t.sendReference}
+                  </button>
+                  {handoffStatus === "sent" ? (
+                    <p className="handoff-confirmation">{t.referenceSent}</p>
+                  ) : null}
+                  <button className="secondary-text-button" type="button" onClick={copyReference}>
                     {referenceCopied ? t.copiedReference : t.copyReference}
                   </button>
                   {fieldError ? <p className="form-error" role="alert">{fieldError}</p> : null}
-                  <button className="secondary-text-button" type="button" onClick={reset}>
+                  <button className="secondary-text-button another-request-button" type="button" onClick={reset}>
                     {t.another}
                   </button>
                 </>
@@ -482,6 +614,48 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
                 <span aria-hidden="true">＋</span>{t.addProduct}
               </button>
 
+              {!isLinkedConversation ? (
+                <section className="public-contact-card">
+                  <div>
+                    <strong>{t.publicContactTitle}</strong>
+                    <p>{t.publicContactIntro}</p>
+                  </div>
+                  <fieldset>
+                    <legend>{t.contactChannel}</legend>
+                    <div className="contact-channel-options">
+                      {Object.keys(t.contactLabels).map((channel) => (
+                        <button
+                          className={contactChannel === channel ? "active" : ""}
+                          type="button"
+                          key={channel}
+                          aria-pressed={contactChannel === channel}
+                          onClick={() => {
+                            setContactChannel(channel);
+                            setContact("");
+                            setFieldError("");
+                          }}
+                        >
+                          {t.contactLabels[channel]}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <label>
+                    <span>{t.contactFieldLabels[contactChannel]}</span>
+                    <input
+                      type={contactChannel === "whatsapp" ? "tel" : "text"}
+                      inputMode={contactChannel === "whatsapp" ? "tel" : "text"}
+                      maxLength="150"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      value={contact}
+                      onChange={(event) => setContact(event.target.value)}
+                      placeholder={t.contactPlaceholders[contactChannel]}
+                    />
+                  </label>
+                </section>
+              ) : null}
+
               <div className="honeypot" aria-hidden="true">
                 <label htmlFor="website">Website</label>
                 <input
@@ -500,7 +674,9 @@ function RequestForm({ conversationReference = "", invalidConversationLink = fal
                 {status === "sending" ? t.sending : t.submit}
               </button>
               <p className="trust-line"><span aria-hidden="true">✓</span>{t.trust}</p>
-              <p className="privacy-line">{t.privacy}</p>
+              <p className="privacy-line">
+                {isLinkedConversation ? t.linkedPrivacy : t.privacy}
+              </p>
             </form>
           )}
         </div>

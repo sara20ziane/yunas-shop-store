@@ -673,6 +673,43 @@ textarea:focus,
   font-size: 13px;
 }
 
+.required-next-step {
+  display: grid;
+  width: 100%;
+  gap: 5px;
+  margin-top: 18px;
+  border: 1px solid #d69a9d;
+  border-radius: 14px;
+  padding: 13px 15px;
+  background: #fff1ef;
+  color: var(--plum);
+}
+
+.required-next-step strong {
+  font-size: 14px;
+}
+
+.required-next-step span,
+.handoff-confirmation {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.messaging-handoff-button {
+  margin-top: 12px;
+}
+
+.handoff-confirmation {
+  margin: 11px 0 0;
+  color: #497454;
+  font-weight: 800;
+}
+
+.another-request-button {
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .secondary-text-button {
   margin-top: 14px;
   border: 0;
@@ -714,6 +751,84 @@ textarea:focus,
   font-size: 12px;
   font-weight: 700;
   line-height: 1.45;
+}
+
+.public-contact-card {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0 20px;
+  border: 1px solid rgba(104, 40, 63, 0.16);
+  border-radius: 16px;
+  padding: 15px;
+  background: rgba(244, 229, 229, 0.58);
+}
+
+.public-contact-card > div > strong {
+  color: var(--plum);
+  font-size: 14px;
+}
+
+.public-contact-card p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.public-contact-card fieldset {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.public-contact-card legend,
+.public-contact-card label > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--plum);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.contact-channel-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.contact-channel-options button {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 5px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.contact-channel-options button.active {
+  border-color: var(--plum);
+  background: var(--plum);
+  color: #fff;
+}
+
+.public-contact-card input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 0 12px;
+  outline: none;
+  background: #fff;
+  color: var(--cacao);
+  font-size: 14px;
+}
+
+.public-contact-card input:focus {
+  border-color: var(--plum);
+  box-shadow: 0 0 0 3px rgba(104, 40, 63, 0.08);
 }
 
 .invalid-link-error {
